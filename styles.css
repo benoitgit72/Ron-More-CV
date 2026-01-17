@@ -244,16 +244,22 @@ body {
     animation: fadeInRight 1s ease-out;
 }
 
-.profile-placeholder {
-    width: 100%;
-    max-width: 400px;
+.profile-photo {
+    width: 350px;
+    height: 350px;
+    max-width: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 20%;
+    border: 5px solid var(--primary-color);
+    box-shadow: 0 10px 40px rgba(74, 144, 226, 0.4);
     animation: float 6s ease-in-out infinite;
+    transition: var(--transition);
 }
 
-.profile-placeholder svg {
-    width: 100%;
-    height: auto;
-    filter: drop-shadow(0 10px 30px rgba(74, 144, 226, 0.3));
+.profile-photo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 50px rgba(74, 144, 226, 0.6);
 }
 
 .scroll-indicator {
