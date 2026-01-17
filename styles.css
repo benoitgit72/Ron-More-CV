@@ -767,6 +767,24 @@ body {
     min-height: 120px;
 }
 
+.contact-note {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(74, 144, 226, 0.1);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 5px;
+    color: var(--gray-text);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.form-note {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--gray-text);
+    font-style: italic;
+}
+
 /* ===========================
    Footer
    =========================== */

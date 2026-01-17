@@ -53,6 +53,24 @@ Benoit-Gaulin-CV/
   - Event listeners pour l'interactivité
   - Navigation dynamique
 
+## Configuration Initiale
+
+### Formulaire de Contact Sécurisé
+
+Le formulaire utilise **Formspree** pour protéger votre email :
+
+1. Créez un compte gratuit sur [Formspree.io](https://formspree.io)
+2. Créez un nouveau formulaire
+3. Copiez votre Form ID
+4. Remplacez `YOUR_FORM_ID` dans `index.html` (ligne 438)
+5. Consultez [SETUP_FORMSPREE.md](SETUP_FORMSPREE.md) pour le guide complet
+
+### Liens Sociaux
+
+Mettez à jour vos liens LinkedIn et GitHub dans `index.html` :
+- Ligne 424 : Remplacez `votre-profil` par votre nom d'utilisateur LinkedIn
+- Ligne 429 : Lien GitHub déjà configuré avec `benoitgit72`
+
 ## Installation et Utilisation
 
 ### Option 1: Ouvrir directement dans le navigateur
