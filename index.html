@@ -662,6 +662,66 @@
         </svg>
     </button>
 
+    <!-- Chatbot IA -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <button class="chatbot-toggle" id="chatbotToggle" aria-label="Demander à l'IA">
+            <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3>💬 Demander à l'IA</h3>
+                <p>Posez-moi des questions sur le CV de Benoit</p>
+            </div>
+
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        Bonjour! Je suis un assistant IA qui peut répondre à vos questions sur le parcours professionnel de Benoit Gaulin. N'hésitez pas à me demander des informations sur son expérience, ses compétences ou sa formation.
+                    </div>
+                </div>
+            </div>
+
+            <div class="chatbot-input-container">
+                <div class="api-key-setup" id="apiKeySetup">
+                    <input
+                        type="password"
+                        id="apiKeyInput"
+                        class="api-key-input"
+                        placeholder="Entrez votre clé API Claude"
+                    >
+                    <button id="saveApiKey" class="btn-save-key">Sauvegarder</button>
+                </div>
+
+                <div class="chatbot-input-area" id="chatInputArea" style="display: none;">
+                    <textarea
+                        id="chatInput"
+                        class="chat-input"
+                        placeholder="Posez votre question..."
+                        rows="1"
+                    ></textarea>
+                    <button id="sendMessage" class="btn-send" aria-label="Envoyer">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+
+                <button id="resetApiKey" class="btn-reset-key" style="display: none;">
+                    Changer la clé API
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script src="chatbot.js"></script>
 </body>
 </html>
