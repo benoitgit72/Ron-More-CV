@@ -11,9 +11,9 @@ export default async function handler(req, res) {
         const { messages, cvContext } = req.body;
 
         // Vérifier que la clé API est configurée
-        if (!process.env.CLAUDE_API_KEY) {
+        if (!process.env.ANTHROPIC_API_KEY) {
             return res.status(500).json({
-                error: 'API key not configured. Please add CLAUDE_API_KEY to your Vercel environment variables.'
+                error: 'API key not configured. Please add ANTHROPIC_API_KEY to your Vercel environment variables.'
             });
         }
 
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': process.env.CLAUDE_API_KEY,
+                'x-api-key': process.env.ANTHROPIC_API_KEY,
                 'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify({
