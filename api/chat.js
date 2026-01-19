@@ -4,33 +4,45 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
-// Configuration du rate limiting avec Upstash Redis
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+// Initialiser Redis seulement si les variables d'environnement sont disponibles
+let redis = null;
+let ratelimit = null;
+let hourlyLimit = null;
+let dailyLimit = null;
 
-const ratelimit = new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(5, '1 m'), // 5 requêtes par minute
-    analytics: true,
-    prefix: 'benoit-cv-ratelimit',
-});
+// Vérifier que les variables d'environnement Redis sont configurées
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+        redis = new Redis({
+            url: process.env.UPSTASH_REDIS_REST_URL,
+            token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        });
 
-// Rate limiters supplémentaires pour heure et jour
-const hourlyLimit = new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(10, '1 h'), // 10 requêtes par heure
-    analytics: true,
-    prefix: 'benoit-cv-hourly',
-});
+        ratelimit = new Ratelimit({
+            redis: redis,
+            limiter: Ratelimit.slidingWindow(5, '1 m'), // 5 requêtes par minute
+            analytics: true,
+            prefix: 'benoit-cv-ratelimit',
+        });
 
-const dailyLimit = new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(15, '1 d'), // 15 requêtes par jour
-    analytics: true,
-    prefix: 'benoit-cv-daily',
-});
+        // Rate limiters supplémentaires pour heure et jour
+        hourlyLimit = new Ratelimit({
+            redis: redis,
+            limiter: Ratelimit.slidingWindow(10, '1 h'), // 10 requêtes par heure
+            analytics: true,
+            prefix: 'benoit-cv-hourly',
+        });
+
+        dailyLimit = new Ratelimit({
+            redis: redis,
+            limiter: Ratelimit.slidingWindow(15, '1 d'), // 15 requêtes par jour
+            analytics: true,
+            prefix: 'benoit-cv-daily',
+        });
+    } catch (error) {
+        console.error('Erreur lors de l\'initialisation de Redis:', error);
+    }
+}
 
 export default async function handler(req, res) {
     // Permettre seulement les requêtes POST
@@ -39,42 +51,50 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Obtenir l'adresse IP du client
-        const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
-                   req.headers['x-real-ip'] ||
-                   req.connection.remoteAddress ||
-                   'unknown';
+        // Vérifier que Redis est configuré
+        if (!redis || !ratelimit || !hourlyLimit || !dailyLimit) {
+            console.error('Rate limiting non disponible - Variables Redis manquantes ou invalides');
+            console.error('UPSTASH_REDIS_REST_URL présent:', !!process.env.UPSTASH_REDIS_REST_URL);
+            console.error('UPSTASH_REDIS_REST_TOKEN présent:', !!process.env.UPSTASH_REDIS_REST_TOKEN);
+            // Continuer sans rate limiting si Redis n'est pas configuré
+        } else {
+            // Obtenir l'adresse IP du client
+            const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
+                       req.headers['x-real-ip'] ||
+                       req.connection.remoteAddress ||
+                       'unknown';
 
-        // Vérifier les limites (minute, heure, jour)
-        const [minuteResult, hourResult, dayResult] = await Promise.all([
-            ratelimit.limit(ip),
-            hourlyLimit.limit(ip),
-            dailyLimit.limit(ip),
-        ]);
+            // Vérifier les limites (minute, heure, jour)
+            const [minuteResult, hourResult, dayResult] = await Promise.all([
+                ratelimit.limit(ip),
+                hourlyLimit.limit(ip),
+                dailyLimit.limit(ip),
+            ]);
 
-        // Si l'une des limites est dépassée, retourner une erreur 429
-        if (!minuteResult.success) {
-            const resetInMinutes = Math.ceil((minuteResult.reset - Date.now()) / 60000);
-            return res.status(429).json({
-                error: `Trop de requêtes. Veuillez réessayer dans ${resetInMinutes} minute${resetInMinutes > 1 ? 's' : ''}.`,
-                retryAfter: minuteResult.reset
-            });
-        }
+            // Si l'une des limites est dépassée, retourner une erreur 429
+            if (!minuteResult.success) {
+                const resetInMinutes = Math.ceil((minuteResult.reset - Date.now()) / 60000);
+                return res.status(429).json({
+                    error: `Trop de requêtes. Veuillez réessayer dans ${resetInMinutes} minute${resetInMinutes > 1 ? 's' : ''}.`,
+                    retryAfter: minuteResult.reset
+                });
+            }
 
-        if (!hourResult.success) {
-            const resetInMinutes = Math.ceil((hourResult.reset - Date.now()) / 60000);
-            return res.status(429).json({
-                error: `Trop de requêtes. Veuillez réessayer dans ${resetInMinutes} minute${resetInMinutes > 1 ? 's' : ''}.`,
-                retryAfter: hourResult.reset
-            });
-        }
+            if (!hourResult.success) {
+                const resetInMinutes = Math.ceil((hourResult.reset - Date.now()) / 60000);
+                return res.status(429).json({
+                    error: `Trop de requêtes. Veuillez réessayer dans ${resetInMinutes} minute${resetInMinutes > 1 ? 's' : ''}.`,
+                    retryAfter: hourResult.reset
+                });
+            }
 
-        if (!dayResult.success) {
-            const resetInHours = Math.ceil((dayResult.reset - Date.now()) / 3600000);
-            return res.status(429).json({
-                error: `Trop de requêtes. Veuillez réessayer dans ${resetInHours} heure${resetInHours > 1 ? 's' : ''}.`,
-                retryAfter: dayResult.reset
-            });
+            if (!dayResult.success) {
+                const resetInHours = Math.ceil((dayResult.reset - Date.now()) / 3600000);
+                return res.status(429).json({
+                    error: `Trop de requêtes. Veuillez réessayer dans ${resetInHours} heure${resetInHours > 1 ? 's' : ''}.`,
+                    retryAfter: dayResult.reset
+                });
+            }
         }
 
         const { messages, cvContext } = req.body;
