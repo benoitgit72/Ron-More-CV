@@ -1,7 +1,9 @@
 
 # LISTE DES COMMANDES UTILES DU PROJET
 
+## ################################################################
 ## GESTION VENV PYTHON
+## ################################################################
 
 ## START/STOP ENVIRONNEMENT
 ### Start
@@ -9,7 +11,18 @@
 ### Stop
     deactivate
 
+## ################################################################
 ## GIT COMMANDS
+## ################################################################
+
+### Créer un nouveau TAG
+git tag -a v1.0.0 -m "Version initiale CV interactif avec chatbot IA"
+
+### Pousser UN tag spécifique
+git push origin v1.0.0
+
+### Vérifier que le tag est créé
+git tag
 
 ### Voir tous les tags
 git tag -l
