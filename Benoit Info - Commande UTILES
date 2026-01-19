@@ -1,0 +1,20 @@
+
+# LISTE DES COMMANDES UTILES DU PROJET
+
+## GESTION VENV PYTHON
+
+## START/STOP ENVIRONNEMENT
+### Start
+    source /Users/macbook-air.dev/Benoit-Gaulin-CV/Benoit-Gaulin-CV_venv/bin/activate
+### Stop
+    deactivate
+
+## GIT COMMANDS
+
+### Voir tous les tags
+git tag -l
+ou
+https://github.com/benoitgit72/Benoit-Gaulin-CV/tags
+
+### Pousse tous les tags vers le dépôt distant
+git push origin --tags
