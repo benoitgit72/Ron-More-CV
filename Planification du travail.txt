@@ -1,0 +1,35 @@
+#######################################
+### À FAIRE                         ###
+#######################################
+
+[1] [LIMITER LES ACCÈS API RÉPÉTITIFS]
+    [NOT-STARTED] [HIGH]
+
+[2] [AJOUTER VERSION ANGLAIS]
+    [NOT-STARTED] [HIGH]
+
+[3] AUTOMATISER LA CRÉATION D'UN NOUVEAU CV INTÉRACTIF
+    NOT-STARTED HIGH
+    - Demander à Claude de me fournir un dumb des détails du CV
+    - Demander quel format serait le plus efficace pour créeer nouveau CV
+    - Faire constuire un playbook - réexécutable pour chaque nouveau CV
+
+
+---------------------------------------
+
+[x] [TITRE]
+    [STATUT] [IMPORTANCE]
+[x] [TITRE]
+    [STATUT] [IMPORTANCE]
+[x] [TITRE]
+    [STATUT] [IMPORTANCE]
+[x] [TITRE]
+    [STATUT] [IMPORTANCE]
+[x] [TITRE]
+    [STATUT] [IMPORTANCE]
+[x] [TITRE]
+    [STATUT] [IMPORTANCE]
+
+#######################################
+### COMPLÉTÉ                        ###
+#######################################
