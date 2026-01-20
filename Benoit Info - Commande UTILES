@@ -31,3 +31,13 @@ https://github.com/benoitgit72/Benoit-Gaulin-CV/tags
 
 ### Pousse tous les tags vers le dépôt distant
 git push origin --tags
+
+## ################################################################
+## VERCEL COMMANDS
+## ################################################################
+
+### Manages the Environment Variables for your current Project
+vercel env ls
+
+### Deploy in Production
+vercel --prod --yes
