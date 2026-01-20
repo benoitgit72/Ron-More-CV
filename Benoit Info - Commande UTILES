@@ -15,6 +15,16 @@
 ## GIT COMMANDS
 ## ################################################################
 
+### Vérifier le remote github
+git remote -v
+
+### Set a new remote GITHUB
+git remote set-url origin https://github.com/benoitgit72/Ron-More-CV.git
+
+
+### Annuler le dernier commit (local et distant)
+git revert HEAD --no-edit
+
 ### Créer un nouveau TAG
 git tag -a v1.0.0 -m "Version initiale CV interactif avec chatbot IA"
 
