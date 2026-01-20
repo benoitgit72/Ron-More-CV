@@ -5,9 +5,11 @@ class CVChatbot {
     constructor() {
         // Plus besoin de stocker la clé API - elle est sur le serveur
         this.conversationHistory = [];
+        this.additionalInfo = ''; // Stockage des infos additionnelles du fichier markdown
         this.initializeElements();
         this.attachEventListeners();
         this.hideApiKeySetup(); // Plus besoin de demander la clé API
+        this.loadAdditionalInfo(); // Charger les infos additionnelles
     }
 
     initializeElements() {
@@ -59,6 +61,19 @@ class CVChatbot {
         this.apiKeySetup.style.display = 'none';
         this.chatInputArea.style.display = 'flex';
         this.resetApiKeyButton.style.display = 'none';
+    }
+
+    async loadAdditionalInfo() {
+        try {
+            const response = await fetch('/api/additional-info');
+            if (response.ok) {
+                const data = await response.json();
+                this.additionalInfo = data.content || '';
+            }
+        } catch (error) {
+            console.error('Error loading additional info:', error);
+            this.additionalInfo = '';
+        }
     }
 
     saveApiKey() {
@@ -172,7 +187,14 @@ class CVChatbot {
 
         const about = document.querySelector('.about-text')?.textContent || '';
 
-        return `À PROPOS:\n${about}\n\nEXPÉRIENCES PROFESSIONNELLES:\n${experiences}\n\nCOMPÉTENCES:\n${skills}`;
+        // Construire le contexte avec les informations additionnelles si disponibles
+        let context = `À PROPOS:\n${about}\n\nEXPÉRIENCES PROFESSIONNELLES:\n${experiences}\n\nCOMPÉTENCES:\n${skills}`;
+
+        if (this.additionalInfo) {
+            context += `\n\nINFORMATIONS ADDITIONNELLES:\n${this.additionalInfo}`;
+        }
+
+        return context;
     }
 
     addMessage(type, content) {
