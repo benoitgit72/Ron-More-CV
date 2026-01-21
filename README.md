@@ -226,7 +226,7 @@ vercel
 
 ## Licence
 
-© 2024 Benoit Gaulin. Tous droits réservés.
+© 2026 [Prénom Nom]. Tous droits réservés.
 
 ## Contact
 
