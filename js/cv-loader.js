@@ -308,6 +308,15 @@ function renderAboutSection(cvInfo) {
             linkedinLink.href = cvInfo.linkedin;
         }
     }
+
+    // Mettre à jour le formulaire de contact Formspree (si disponible)
+    if (cvInfo.formspree_id) {
+        const contactForm = document.querySelector('#contactForm');
+        if (contactForm) {
+            contactForm.setAttribute('action', `https://formspree.io/f/${cvInfo.formspree_id}`);
+            console.log(`✅ Formulaire Formspree configuré: ${cvInfo.formspree_id}`);
+        }
+    }
 }
 
 /**
