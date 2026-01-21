@@ -5,9 +5,12 @@
 ## GESTION VENV PYTHON
 ## ################################################################
 
+## Creer venv
+python3 -m venv SyncCV_venv
+
 ## START/STOP ENVIRONNEMENT
 ### Start
-    source /Users/macbook-air.dev/Benoit-Gaulin-CV/Benoit-Gaulin-CV_venv/bin/activate
+    source /Users/macbook-air.dev/SyncCV/SyncCV_venv/bin/activate
 ### Stop
     deactivate
 
@@ -19,14 +22,14 @@
 git remote -v
 
 ### Set a new remote GITHUB
-git remote set-url origin https://github.com/benoitgit72/Ron-More-CV.git
+git remote set-url origin https://github.com/benoitgit72/SyncCV.git
 
 
 ### Annuler le dernier commit (local et distant)
 git revert HEAD --no-edit
 
 ### Créer un nouveau TAG
-git tag -a "Ron-More-CV_2026-01-20_17-40" -m "Support bilingue complet (FR/EN) avec données Supabase" && git push origin "Ron-More-CV_2026-01-20_17-40"
+git tag -a "SyncCV_2026-01-20_17-40" -m "Support bilingue complet (FR/EN) avec données Supabase" && git push origin "Ron-More-CV_2026-01-20_17-40"
 
 ### Pousser UN tag spécifique
 git push origin v1.0.0

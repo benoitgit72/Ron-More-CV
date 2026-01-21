@@ -89,7 +89,7 @@ Ce document explique l'architecture recommandée pour permettre à chaque propri
 └─────────────────────────────────────┘
             ↓ Lecture publique
 ┌─────────────────────────────────────┐
-│  ron-more.votredomaine.com          │
+│  SyncCV.votredomaine.com          │
 │  CV public (lecture seule)          │
 └─────────────────────────────────────┘
 ```

@@ -18,12 +18,12 @@ Ce projet présente mon expérience professionnelle, mes compétences techniques
 ## Structure du Projet
 
 ```
-Benoit-Gaulin-CV/
+SyncCV/
 ├── index.html          # Structure HTML du site
 ├── styles.css          # Styles CSS et animations
 ├── script.js           # Fonctionnalités JavaScript
 ├── README.md           # Documentation
-├── Benoit-Gaulin-CV_venv/  # Environnement virtuel Python
+├── SyncCV_venv/  # Environnement virtuel Python
 ├── data/               # Données (à remplir si nécessaire)
 ├── logs/               # Logs de l'application
 ├── modules/            # Modules personnalisés
@@ -76,7 +76,7 @@ Mettez à jour vos liens LinkedIn et GitHub dans `index.html` :
 ### Option 1: Ouvrir directement dans le navigateur
 
 ```bash
-cd /Users/macbook-air.dev/Benoit-Gaulin-CV
+cd /Users/macbook-air.dev/SyncCV
 open index.html
 ```
 
@@ -86,7 +86,7 @@ Ou double-cliquez simplement sur `index.html` dans le Finder.
 
 ```bash
 # Activer l'environnement virtuel
-source Benoit-Gaulin-CV_venv/bin/activate
+source SyncCV_venv/bin/activate
 
 # Démarrer un serveur HTTP simple
 python -m http.server 8000
@@ -181,11 +181,9 @@ git add .
 git commit -m "Initial commit: Interactive CV"
 
 # Créer un repo sur GitHub et pousser
-git remote add origin https://github.com/votre-username/benoit-gaulin-cv.git
+git remote add origin https://github.com/votre-username/SyncCV.git
 git push -u origin main
 
-# Activer GitHub Pages dans les paramètres du repo
-# Le site sera disponible à: https://votre-username.github.io/benoit-gaulin-cv
 ```
 
 ### Netlify
@@ -201,7 +199,7 @@ git push -u origin main
 npm install -g vercel
 
 # Déployer
-cd /Users/macbook-air.dev/Benoit-Gaulin-CV
+cd /Users/macbook-air.dev/SyncCV
 vercel
 ```
 

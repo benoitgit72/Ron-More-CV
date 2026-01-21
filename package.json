@@ -1,8 +1,12 @@
 {
-  "name": "benoit-gaulin-cv",
+  "name": "synccv",
   "version": "1.0.0",
   "description": "CV interactif de Benoit Gaulin avec chatbot IA",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benoitgit72/SyncCV.git"
+  },
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
