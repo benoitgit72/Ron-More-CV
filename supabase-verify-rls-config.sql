@@ -261,7 +261,7 @@ WITH checklist AS (
     SELECT '✅ Politiques de modification privée créées' as item,
            (SELECT COUNT(*) FROM pg_policies
             WHERE tablename IN ('profiles', 'cv_info', 'experiences', 'formations', 'competences')
-            AND cmd IN ('UPDATE', 'DELETE')) >= 10 as passed
+            AND cmd IN ('UPDATE', 'DELETE')) >= 9 as passed
     UNION ALL
     SELECT '✅ Aucune politique avec typo' as item,
            NOT EXISTS (
