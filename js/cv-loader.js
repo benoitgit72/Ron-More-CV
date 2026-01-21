@@ -224,6 +224,72 @@ function renderHeroSection(cvInfo) {
             photoElement.alt = `${cvInfo.nom} - Photo de profil`;
         }
     }
+
+    // Mettre à jour tous les éléments contenant le nom
+    updateNameThroughout(cvInfo.nom);
+}
+
+/**
+ * Met à jour le nom du propriétaire du CV partout dans la page
+ */
+function updateNameThroughout(nom) {
+    // Mettre à jour la navigation (nav-brand)
+    const navBrand = document.querySelector('.nav-brand');
+    if (navBrand) {
+        navBrand.textContent = nom;
+    }
+
+    // Mettre à jour le meta description
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+        const lang = currentLanguage === 'en' ? 'Interactive CV of' : 'CV interactif de';
+        metaDescription.setAttribute('content', `${lang} ${nom}`);
+    }
+
+    // Mettre à jour le titre de la page
+    const pageTitle = document.querySelector('title');
+    if (pageTitle) {
+        const titleText = currentLanguage === 'en' ? 'Interactive CV' : 'CV Interactif';
+        pageTitle.textContent = `${nom} - ${titleText}`;
+    }
+
+    // Mettre à jour le placeholder du formulaire de contact
+    const messageInput = document.querySelector('#message');
+    if (messageInput) {
+        const greeting = currentLanguage === 'en' ? 'Hello' : 'Bonjour';
+        const text = currentLanguage === 'en'
+            ? `${greeting} ${nom.split(' ')[0]}, I would like to discuss with you...`
+            : `${greeting} ${nom.split(' ')[0]}, je souhaiterais discuter avec vous...`;
+        messageInput.setAttribute('placeholder', text);
+    }
+
+    // Mettre à jour le footer
+    const footerText = document.querySelector('.footer p');
+    if (footerText && footerText.textContent.includes('[prénom nom]')) {
+        const year = new Date().getFullYear();
+        const rightsText = currentLanguage === 'en' ? 'All rights reserved' : 'Tous droits réservés';
+        footerText.textContent = `© ${year} ${nom}. ${rightsText}.`;
+    }
+
+    // Mettre à jour le sous-titre du chatbot
+    const chatbotSubtitle = document.querySelector('.chatbot-header p');
+    if (chatbotSubtitle) {
+        const prenom = nom.split(' ')[0];
+        const text = currentLanguage === 'en'
+            ? `Ask me questions about ${prenom}'s CV`
+            : `Posez-moi des questions sur le CV de ${prenom}`;
+        chatbotSubtitle.textContent = text;
+    }
+
+    // Mettre à jour le message de bienvenue du chatbot
+    const welcomeMessage = document.querySelector('.bot-message .message-content');
+    if (welcomeMessage && welcomeMessage.textContent.includes('Benoit Gaulin')) {
+        if (currentLanguage === 'en') {
+            welcomeMessage.textContent = `Hello! I am an AI assistant who can answer your questions about ${nom}'s professional background. Feel free to ask me about their experience, skills or education.`;
+        } else {
+            welcomeMessage.textContent = `Bonjour! Je suis un assistant IA qui peut répondre à vos questions sur le parcours professionnel de ${nom}. N'hésitez pas à me demander des informations sur son expérience, ses compétences ou sa formation.`;
+        }
+    }
 }
 
 /**
@@ -439,6 +505,11 @@ function attachExperienceToggles() {
 function reloadCVWithLanguage(newLanguage) {
     console.log(`🌍 Changement de langue vers: ${newLanguage}`);
     currentLanguage = newLanguage;
+
+    // Mettre à jour le nom dans tous les éléments avec la nouvelle langue
+    if (cvData && cvData.cvInfo) {
+        updateNameThroughout(cvData.cvInfo.nom);
+    }
 
     // Forcer le rechargement du CV avec la nouvelle langue
     renderCV();
