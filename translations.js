@@ -21,8 +21,8 @@ const translations = {
         //about_text: "Chef de projet technique senior avec plus de 29 ans d'expérience en technologie SAS et gestion de projets complexes. Expert en migration SAS, transformation numérique et leadership d'équipes techniques distribuées. Passionné par l'innovation technologique et l'excellence opérationnelle.",
         about_text: "Chef de projet technique senior avec plus de 29 ans d'expérience en technologie SAS et gestion de projets complexes. Mes années d'expérience m'ont donné l'occasion de participer à un vaste nombre d'industries telles que les assurances, la banque, la fabrication, les énergies et le gouvernement. Depuis plus de 15 ans maintenant, j'ai cumulé divers rôles de direction et de gestion. J'ai aidé les organisations à concevoir, bâtir et opérationnaliser des solutions afin qu'elles puissent être ou demeurer des leaders dans leurs domaines respectifs. Dans ma carrière, je m'assure constamment d'être rigoureux et minutieux dans le maintien d'un haut niveau de qualité dans divers contextes où des solutions efficaces doivent être livrées rapidement et dans les limites du budget. Mon style de gestion est fortement basé sur la responsabilisation de tous les acteurs impliqués dans mes projets. Même si je suis généralement une personne d'action, je me dirige toujours dans la direction qui favorise les meilleures interactions humaines possibles. Toujours. J'aime véritablement apprendre et je suis convaincu que l'humilité est une qualité majeure.",
         about_years_exp: "Années d'expérience",
-        about_projects: "Projets livrés",
-        about_certifications: "Certifications SAS",
+        about_projects: "Années en Leadership",
+        about_certifications: "Utilisateurs SAS Soutenus",
 
         // Experience Section
         exp_title: "Parcours professionnel",
@@ -294,8 +294,8 @@ const translations = {
         //about_text: "Senior Technical Project Manager with over 29 years of experience in SAS technology and complex project management. Expert in SAS migration, digital transformation, and leading distributed technical teams. Passionate about technological innovation and operational excellence.",
         about_text: "I am an experienced SAS nd IT user, acting as a Technical Project Manager, IT  expert and SAS leader within the Information Technology domain. My years of experience gave me the chance to be involved in a vast number of industries such as Insurances, Banking, Manufacture, Facilities and Government.  For over 15 years now, I cumulated various leading and managing roles.  I helped organization to design, build and operationalize solutions so they can be or stay leaders in their own respective fields.  In my career, I constantly make sure to be rigorous and throughout in maintaining a high level of quality in various contexts where efficient solutions must be delivered fast and on-budget.  My management style is strongly based on empowering all the actors involved in my Projects.  Even though I am in general a go-getter, I always steer myself in the direction that promotes the best possible human interaction. Always. I truly love learning and I go by the rule that humility is a major quality.",
         about_years_exp: "Years of Experience",
-        about_projects: "Projects Delivered",
-        about_certifications: "SAS Certifications",
+        about_projects: "Years in Leadership",
+        about_certifications: "SAS Users Supported",
 
         // Experience Section
         exp_title: "Professional Journey",
