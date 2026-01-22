@@ -40,7 +40,7 @@ git tag
 ### Voir tous les tags
 git tag -l
 ou
-https://github.com/benoitgit72/Benoit-Gaulin-CV/tags
+https://github.com/benoitgit72/SyncCV/tags
 
 ### Pousse tous les tags vers le dépôt distant
 git push origin --tags
