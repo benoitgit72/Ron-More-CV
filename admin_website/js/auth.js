@@ -34,6 +34,33 @@ async function signIn(email, password, rememberMe = false) {
 }
 
 /**
+ * Connecte un utilisateur avec GitHub OAuth
+ */
+async function signInWithGitHub() {
+    try {
+        const supabase = getSupabaseClient();
+        if (!supabase) {
+            throw new Error('Client Supabase non initialisé');
+        }
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'github',
+            options: {
+                redirectTo: `${window.location.origin}/admin_website/index.html`
+            }
+        });
+
+        if (error) throw error;
+
+        console.log('✅ Redirection vers GitHub...');
+        return data;
+    } catch (error) {
+        console.error('❌ Erreur de connexion GitHub:', error);
+        throw error;
+    }
+}
+
+/**
  * Déconnecte l'utilisateur actuel
  */
 async function signOut() {
@@ -69,11 +96,20 @@ async function getCurrentUser() {
 
         const { data: { user }, error } = await supabase.auth.getUser();
 
-        if (error) throw error;
+        if (error) {
+            // Ne pas logger si c'est juste une session manquante (normal au premier chargement)
+            if (error.name !== 'AuthSessionMissingError') {
+                console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
+            }
+            return null;
+        }
 
         return user;
     } catch (error) {
-        console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
+        // Ne pas logger si c'est juste une session manquante
+        if (error.name !== 'AuthSessionMissingError') {
+            console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
+        }
         return null;
     }
 }
