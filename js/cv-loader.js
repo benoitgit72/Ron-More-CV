@@ -249,8 +249,13 @@ function renderHeroSection(cvInfo) {
     const photoElement = document.querySelector('.profile-photo');
     if (photoElement) {
         if (cvInfo.photo_url) {
+            // Ajouter un timestamp pour forcer le rechargement (cache busting)
+            const urlWithTimestamp = cvInfo.photo_url.includes('?')
+                ? `${cvInfo.photo_url}&t=${Date.now()}`
+                : `${cvInfo.photo_url}?t=${Date.now()}`;
+
             // Si une photo est définie, l'afficher
-            photoElement.src = cvInfo.photo_url;
+            photoElement.src = urlWithTimestamp;
             photoElement.alt = `${cvInfo.nom} - Photo de profil`;
             photoElement.style.display = 'block';
         } else {

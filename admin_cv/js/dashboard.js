@@ -195,7 +195,7 @@ function setupPhotoUpload() {
             uploadBtn.disabled = true;
             uploadBtn.innerHTML = '<span class="spinner"></span> Upload en cours...';
 
-            // Preview image
+            // Preview image temporaire depuis le fichier local
             await previewImage(file, photoPreview);
 
             // Upload to Supabase Storage
@@ -204,6 +204,12 @@ function setupPhotoUpload() {
             // Update hidden input and save to database
             document.getElementById('photo_url').value = photoUrl;
             await upsertCVInfo(currentUser.id, { photo_url: photoUrl });
+
+            // Forcer le rechargement de la photo depuis Supabase (avec cache busting)
+            const urlWithTimestamp = photoUrl.includes('?')
+                ? `${photoUrl}&t=${Date.now()}`
+                : `${photoUrl}?t=${Date.now()}`;
+            photoPreview.src = urlWithTimestamp;
 
             // Show success
             showToast('Photo uploadée avec succès', 'success');
@@ -263,7 +269,12 @@ function loadPhotoPreview(photoUrl) {
     const photoPlaceholder = document.getElementById('photoPlaceholder');
     const deleteBtn = document.getElementById('deletePhotoBtn');
 
-    photoPreview.src = photoUrl;
+    // Ajouter un timestamp pour forcer le rechargement (cache busting)
+    const urlWithTimestamp = photoUrl.includes('?')
+        ? `${photoUrl}&t=${Date.now()}`
+        : `${photoUrl}?t=${Date.now()}`;
+
+    photoPreview.src = urlWithTimestamp;
     photoPreview.style.display = 'block';
     photoPlaceholder.style.display = 'none';
     deleteBtn.style.display = 'inline-flex';
