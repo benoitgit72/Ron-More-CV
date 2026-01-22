@@ -29,7 +29,7 @@ git remote set-url origin https://github.com/benoitgit72/SyncCV.git
 git revert HEAD --no-edit
 
 ### Créer un nouveau TAG
-git tag -a "SyncCV_2026-01-20_17-40" -m "Support bilingue complet (FR/EN) avec données Supabase" && git push origin "Ron-More-CV_2026-01-20_17-40"
+git tag -a "SyncCV_2026-01-21_16-41" -m "Plateform fonctionnelle multi-usagers" && git push origin "Ron-More-CV_2026-01-20_17-40"
 
 ### Pousser UN tag spécifique
 git push origin v1.0.0

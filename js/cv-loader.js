@@ -2,8 +2,37 @@
 // Chargement dynamique des données du CV depuis Supabase
 // ============================================
 
-// Slug du CV à charger (par défaut : ron-more)
-const CV_SLUG = 'ron-more';
+/**
+ * Extrait le slug depuis l'URL path
+ * Exemples:
+ *   https://synccv.vercel.app/ron-more → 'ron-more'
+ *   https://synccv.vercel.app/benoit-gaulin → 'benoit-gaulin'
+ *   https://synccv.vercel.app/ → null (affichera la page d'accueil)
+ */
+function getSlugFromURL() {
+    const path = window.location.pathname;
+    const slug = path.split('/').filter(segment => segment.length > 0)[0];
+
+    // Si aucun slug n'est trouvé, retourner null pour afficher la page d'accueil
+    return slug || null;
+}
+
+/**
+ * Redirige vers la page d'accueil si aucun slug n'est fourni
+ */
+function checkAndRedirectToWelcome() {
+    const slug = getSlugFromURL();
+    if (!slug) {
+        console.log('🏠 Aucun slug détecté, redirection vers la page d\'accueil...');
+        window.location.href = '/welcome.html';
+        return true;
+    }
+    return false;
+}
+
+// Slug du CV à charger (extrait depuis l'URL)
+const CV_SLUG = getSlugFromURL();
+console.log(`🔍 Slug détecté depuis l'URL: ${CV_SLUG}`);
 
 // Langue actuelle (par défaut : français)
 let currentLanguage = localStorage.getItem('language') || 'fr';
@@ -527,6 +556,11 @@ function reloadCVWithLanguage(newLanguage) {
 // Initialiser le CV au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Initialisation du chargement du CV...');
+
+    // Vérifier si on doit rediriger vers la page d'accueil
+    if (checkAndRedirectToWelcome()) {
+        return; // Arrêter l'exécution si redirection en cours
+    }
 
     // Récupérer la langue sauvegardée
     currentLanguage = localStorage.getItem('language') || 'fr';
