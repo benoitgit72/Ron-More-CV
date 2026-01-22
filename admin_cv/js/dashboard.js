@@ -559,8 +559,259 @@ function showExperienceModal() {
     alert('Modal d\'ajout d\'expérience à implémenter. Pour l\'instant, utilisez Supabase Studio.');
 }
 
-function editExperience(id) {
-    alert(`Modification de l'expérience ${id} à implémenter`);
+async function editExperience(id) {
+    try {
+        // Récupérer l'expérience à modifier
+        const experiences = await getExperiences(currentUser.id);
+        const exp = experiences.find(e => e.id === id);
+
+        if (!exp) {
+            showToast('Expérience non trouvée', 'error');
+            return;
+        }
+
+        // Créer le modal
+        const modal = createExperienceModal(exp);
+        document.body.appendChild(modal);
+
+        // Focus sur le premier champ
+        setTimeout(() => {
+            modal.querySelector('input').focus();
+        }, 100);
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur lors du chargement de l\'expérience', 'error');
+    }
+}
+
+/**
+ * Créer le modal de modification d'expérience
+ */
+function createExperienceModal(exp) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'experienceModal';
+
+    // Formater les dates pour input[type="date"]
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    };
+
+    modal.innerHTML = `
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Modifier l'expérience professionnelle</h3>
+                <button class="modal-close" onclick="closeExperienceModal()">&times;</button>
+            </div>
+
+            <form id="experienceEditForm" class="modal-body">
+                <!-- Période -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="exp_periode_debut">Date de début *</label>
+                        <input type="date" id="exp_periode_debut" required value="${formatDateForInput(exp.periode_debut)}">
+                    </div>
+                    <div class="form-group">
+                        <label for="exp_periode_fin">Date de fin</label>
+                        <input type="date" id="exp_periode_fin" ${exp.en_cours ? 'disabled' : ''} value="${exp.en_cours ? '' : formatDateForInput(exp.periode_fin)}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="exp_en_cours" ${exp.en_cours ? 'checked' : ''} onchange="toggleEndDate()">
+                        <span>Poste actuel (en cours)</span>
+                    </label>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version française -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇫🇷 Version française</h4>
+
+                <div class="form-group">
+                    <label for="exp_titre">Titre du poste (FR) *</label>
+                    <input type="text" id="exp_titre" required placeholder="Ex: Développeur Full Stack" value="${exp.titre || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_entreprise">Entreprise (FR) *</label>
+                    <input type="text" id="exp_entreprise" required placeholder="Ex: Acme Corporation" value="${exp.entreprise || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_description">Description (FR)</label>
+                    <textarea id="exp_description" rows="4" placeholder="Décrivez vos responsabilités et réalisations...">${exp.description || ''}</textarea>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version anglaise -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇬🇧 Version anglaise</h4>
+
+                <div class="form-group">
+                    <label for="exp_titre_en">Titre du poste (EN)</label>
+                    <input type="text" id="exp_titre_en" placeholder="Ex: Full Stack Developer" value="${exp.titre_en || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_entreprise_en">Entreprise (EN)</label>
+                    <input type="text" id="exp_entreprise_en" placeholder="Ex: Acme Corporation" value="${exp.entreprise_en || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_description_en">Description (EN)</label>
+                    <textarea id="exp_description_en" rows="4" placeholder="Describe your responsibilities and achievements...">${exp.description_en || ''}</textarea>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Compétences (tags) -->
+                <div class="form-group">
+                    <label for="exp_competences">Compétences / Technologies</label>
+                    <div id="exp_tags_container" class="tags-container">
+                        ${exp.competences && exp.competences.length > 0 ?
+                            exp.competences.map(tag => `
+                                <span class="tag-item">
+                                    ${tag}
+                                    <button type="button" class="tag-remove" onclick="removeTag(this)">×</button>
+                                </span>
+                            `).join('') : ''}
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="exp_new_tag" placeholder="Ex: JavaScript, React, Node.js..." onkeypress="handleTagKeyPress(event)">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addTag()">+ Ajouter</button>
+                    </div>
+                    <small class="help-text">Appuyez sur Entrée ou cliquez sur "Ajouter" pour ajouter un tag</small>
+                </div>
+            </form>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeExperienceModal()">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="saveExperience('${exp.id}')">
+                    💾 Enregistrer
+                </button>
+            </div>
+        </div>
+    `;
+
+    return modal;
+}
+
+/**
+ * Fermer le modal d'expérience
+ */
+function closeExperienceModal() {
+    const modal = document.getElementById('experienceModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+/**
+ * Toggle date de fin selon "en cours"
+ */
+function toggleEndDate() {
+    const enCours = document.getElementById('exp_en_cours').checked;
+    const dateFin = document.getElementById('exp_periode_fin');
+
+    dateFin.disabled = enCours;
+    if (enCours) {
+        dateFin.value = '';
+    }
+}
+
+/**
+ * Ajouter un tag
+ */
+function addTag() {
+    const input = document.getElementById('exp_new_tag');
+    const tag = input.value.trim();
+
+    if (!tag) return;
+
+    const container = document.getElementById('exp_tags_container');
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag-item';
+    tagElement.innerHTML = `
+        ${tag}
+        <button type="button" class="tag-remove" onclick="removeTag(this)">×</button>
+    `;
+
+    container.appendChild(tagElement);
+    input.value = '';
+    input.focus();
+}
+
+/**
+ * Supprimer un tag
+ */
+function removeTag(button) {
+    button.parentElement.remove();
+}
+
+/**
+ * Gérer la touche Entrée pour ajouter un tag
+ */
+function handleTagKeyPress(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        addTag();
+    }
+}
+
+/**
+ * Sauvegarder l'expérience modifiée
+ */
+async function saveExperience(id) {
+    try {
+        // Récupérer tous les tags
+        const tagElements = document.querySelectorAll('#exp_tags_container .tag-item');
+        const competences = Array.from(tagElements).map(el => {
+            return el.textContent.replace('×', '').trim();
+        });
+
+        // Construire l'objet expérience
+        const experience = {
+            titre: document.getElementById('exp_titre').value.trim(),
+            entreprise: document.getElementById('exp_entreprise').value.trim(),
+            description: document.getElementById('exp_description').value.trim(),
+            titre_en: document.getElementById('exp_titre_en').value.trim() || null,
+            entreprise_en: document.getElementById('exp_entreprise_en').value.trim() || null,
+            description_en: document.getElementById('exp_description_en').value.trim() || null,
+            periode_debut: document.getElementById('exp_periode_debut').value,
+            periode_fin: document.getElementById('exp_en_cours').checked ? null : document.getElementById('exp_periode_fin').value,
+            en_cours: document.getElementById('exp_en_cours').checked,
+            competences: competences.length > 0 ? competences : null
+        };
+
+        // Validation
+        if (!experience.titre || !experience.entreprise || !experience.periode_debut) {
+            showToast('Veuillez remplir tous les champs obligatoires', 'error');
+            return;
+        }
+
+        if (!experience.en_cours && !experience.periode_fin) {
+            showToast('Veuillez spécifier une date de fin ou cocher "Poste actuel"', 'error');
+            return;
+        }
+
+        // Sauvegarder
+        await updateExperience(id, experience);
+
+        // Fermer le modal
+        closeExperienceModal();
+
+        // Recharger la liste
+        await loadExperiences();
+
+        showToast('Expérience mise à jour avec succès', 'success');
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur lors de la sauvegarde: ' + error.message, 'error');
+    }
 }
 
 async function removeExperience(id) {
