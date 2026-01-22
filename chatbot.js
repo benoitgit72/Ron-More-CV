@@ -65,18 +65,70 @@ class CVChatbot {
 
     async loadAdditionalInfo() {
         try {
-            // Utiliser les données du CV chargées depuis Supabase
-            // Attendre que cvData soit chargé
-            const checkCvData = setInterval(() => {
-                if (window.cvData) {
-                    clearInterval(checkCvData);
-                    // Construire un contexte enrichi à partir des données du CV
-                    this.additionalInfo = this.buildContextFromCvData(window.cvData);
-                }
-            }, 100);
+            // Charger directement depuis Supabase pour avoir les données les plus fraîches
+            const slug = CV_SLUG; // CV_SLUG est défini dans cv-loader.js
+            const cvData = await this.loadCVDataFromSupabase(slug);
+            if (cvData) {
+                this.additionalInfo = this.buildContextFromCvData(cvData);
+                console.log('✅ Contexte chatbot chargé depuis Supabase');
+            }
         } catch (error) {
             console.error('Error loading additional info:', error);
             this.additionalInfo = '';
+        }
+    }
+
+    async loadCVDataFromSupabase(slug) {
+        try {
+            const supabase = getSupabaseClient();
+            if (!supabase) {
+                console.warn('Supabase non disponible');
+                return null;
+            }
+
+            // Récupérer le profil
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('slug', slug)
+                .single();
+
+            if (profileError || !profile) {
+                console.error('Profil non trouvé:', profileError);
+                return null;
+            }
+
+            const userId = profile.id;
+
+            // Charger toutes les données en parallèle
+            const [cvInfo, experiences, formations, competences] = await Promise.all([
+                supabase.from('cv_info').select('*').eq('user_id', userId).single(),
+                supabase.from('experiences').select('*').eq('user_id', userId).order('ordre', { ascending: true }),
+                supabase.from('formations').select('*').eq('user_id', userId).order('ordre', { ascending: true }),
+                supabase.from('competences').select('*').eq('user_id', userId).order('categorie, ordre')
+            ]);
+
+            // Grouper les compétences par catégorie
+            const competencesParCategorie = {};
+            if (competences.data) {
+                competences.data.forEach(comp => {
+                    if (!competencesParCategorie[comp.categorie]) {
+                        competencesParCategorie[comp.categorie] = [];
+                    }
+                    competencesParCategorie[comp.categorie].push(comp);
+                });
+            }
+
+            return {
+                profile: profile,
+                cvInfo: cvInfo.data,
+                experiences: experiences.data || [],
+                formations: formations.data || [],
+                competencesParCategorie: competencesParCategorie
+            };
+        } catch (error) {
+            console.error('Erreur lors du chargement des données:', error);
+            return null;
         }
     }
 
@@ -92,18 +144,52 @@ class CVChatbot {
             context += `Bio: ${cvData.cvInfo.bio}\n\n`;
         }
 
-        // Ajouter un résumé des expériences
+        // Ajouter TOUTES les expériences avec leurs compétences
         if (cvData.experiences && cvData.experiences.length > 0) {
-            context += `Expériences (${cvData.experiences.length}):\n`;
-            cvData.experiences.slice(0, 5).forEach(exp => {
-                context += `- ${exp.titre} chez ${exp.entreprise}\n`;
+            context += `Expériences professionnelles:\n`;
+            cvData.experiences.forEach(exp => {
+                const langue = localStorage.getItem('language') || 'fr';
+                const titre = langue === 'en' && exp.titre_en ? exp.titre_en : exp.titre;
+                const entreprise = langue === 'en' && exp.entreprise_en ? exp.entreprise_en : exp.entreprise;
+                const description = langue === 'en' && exp.description_en ? exp.description_en : exp.description;
+
+                context += `- ${titre} chez ${entreprise}`;
+
+                if (exp.periode_debut) {
+                    const debut = new Date(exp.periode_debut).getFullYear();
+                    const fin = exp.en_cours ? (langue === 'en' ? 'present' : 'présent') : new Date(exp.periode_fin).getFullYear();
+                    context += ` (${debut}-${fin})`;
+                }
+                context += '\n';
+
+                if (description) {
+                    context += `  ${description}\n`;
+                }
+
+                // IMPORTANT: Inclure les technologies/compétences de chaque expérience
+                if (exp.competences && exp.competences.length > 0) {
+                    context += `  Technologies: ${exp.competences.join(', ')}\n`;
+                }
+                context += '\n';
+            });
+        }
+
+        // Ajouter les formations
+        if (cvData.formations && cvData.formations.length > 0) {
+            context += `Formations:\n`;
+            cvData.formations.forEach(form => {
+                context += `- ${form.diplome} à ${form.institution}`;
+                if (form.annee_debut) {
+                    context += ` (${form.annee_debut}${form.annee_fin ? '-' + form.annee_fin : ''})`;
+                }
+                context += '\n';
             });
             context += '\n';
         }
 
-        // Ajouter les compétences par catégorie
+        // Ajouter les compétences globales par catégorie
         if (cvData.competencesParCategorie) {
-            context += 'Compétences:\n';
+            context += 'Compétences techniques:\n';
             Object.entries(cvData.competencesParCategorie).forEach(([categorie, competences]) => {
                 context += `${categorie}: ${competences.map(c => c.competence).join(', ')}\n`;
             });
@@ -204,33 +290,9 @@ class CVChatbot {
     }
 
     getCVContext() {
-        // Extract CV information from the page
-        const experiences = Array.from(document.querySelectorAll('.timeline-content')).map(exp => {
-            const date = exp.querySelector('.timeline-date')?.textContent || '';
-            const title = exp.querySelector('h3')?.textContent || '';
-            const company = exp.querySelector('h4')?.textContent || '';
-            const description = exp.querySelector('p')?.textContent || '';
-            const achievements = Array.from(exp.querySelectorAll('.achievement-list li')).map(li => li.textContent);
-
-            return `${date} - ${title} chez ${company}\n${description}\nRéalisations: ${achievements.join('; ')}`;
-        }).join('\n\n');
-
-        const skills = Array.from(document.querySelectorAll('.skill-category')).map(cat => {
-            const categoryName = cat.querySelector('h3')?.textContent || '';
-            const skillsList = Array.from(cat.querySelectorAll('.skill-info span:first-child')).map(s => s.textContent);
-            return `${categoryName}: ${skillsList.join(', ')}`;
-        }).join('\n');
-
-        const about = document.querySelector('.about-text')?.textContent || '';
-
-        // Construire le contexte avec les informations additionnelles si disponibles
-        let context = `À PROPOS:\n${about}\n\nEXPÉRIENCES PROFESSIONNELLES:\n${experiences}\n\nCOMPÉTENCES:\n${skills}`;
-
-        if (this.additionalInfo) {
-            context += `\n\nINFORMATIONS ADDITIONNELLES:\n${this.additionalInfo}`;
-        }
-
-        return context;
+        // Utiliser directement les informations chargées depuis Supabase
+        // Plus besoin de scraper le DOM - les données sont déjà dans this.additionalInfo
+        return this.additionalInfo || 'Aucune information de CV disponible.';
     }
 
     addMessage(type, content) {
