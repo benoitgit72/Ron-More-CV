@@ -7,6 +7,14 @@
   },
   "rewrites": [
     {
+      "source": "/admin_cv",
+      "destination": "/admin_cv/login.html"
+    },
+    {
+      "source": "/admin_cv/:path*",
+      "destination": "/admin_cv/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

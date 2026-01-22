@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - SyncCV Admin</title>
+    <link rel="stylesheet" href="css/admin-styles.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>SyncCV</h1>
+                <p>Administration Panel</p>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="votre.email@example.com"
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span>Se souvenir de moi</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="loginButton">
+                    <span class="btn-text">Se connecter</span>
+                    <span class="btn-loading" hidden>
+                        <span class="spinner"></span> Connexion en cours...
+                    </span>
+                </button>
+
+                <div id="errorMessage" class="error-message" hidden></div>
+            </form>
+
+            <div class="login-footer">
+                <a href="#" id="forgotPassword">Mot de passe oublié?</a>
+                <div class="divider"></div>
+                <p class="help-text">
+                    Besoin d'aide? Contactez votre administrateur.
+                </p>
+            </div>
+        </div>
+
+        <div class="login-info">
+            <h2>Gérez votre CV professionnel</h2>
+            <ul class="features-list">
+                <li>
+                    <span class="icon">📝</span>
+                    <div>
+                        <strong>Informations personnelles</strong>
+                        <p>Modifiez votre bio, coordonnées et liens professionnels</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">💼</span>
+                    <div>
+                        <strong>Expériences professionnelles</strong>
+                        <p>Ajoutez et organisez votre parcours professionnel</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">🎓</span>
+                    <div>
+                        <strong>Formations</strong>
+                        <p>Mettez en avant vos diplômes et certifications</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">💪</span>
+                    <div>
+                        <strong>Compétences</strong>
+                        <p>Organisez vos compétences par catégories</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="../js/supabase-client.js"></script>
+
+    <!-- Auth Module -->
+    <script src="js/auth.js"></script>
+
+    <!-- Login Script -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const errorMessage = document.getElementById('errorMessage');
+            const loginButton = document.getElementById('loginButton');
+            const btnText = loginButton.querySelector('.btn-text');
+            const btnLoading = loginButton.querySelector('.btn-loading');
+
+            // Show loading state
+            loginButton.disabled = true;
+            btnText.hidden = true;
+            btnLoading.hidden = false;
+            errorMessage.hidden = true;
+
+            try {
+                await signIn(email, password, rememberMe);
+                // Redirect to dashboard on success
+                window.location.href = './index.html';
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = error.message || 'Erreur de connexion. Vérifiez vos identifiants.';
+                errorMessage.hidden = false;
+
+                // Reset button state
+                loginButton.disabled = false;
+                btnText.hidden = false;
+                btnLoading.hidden = true;
+            }
+        });
+
+        // Forgot password handler
+        document.getElementById('forgotPassword').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+
+            if (!email) {
+                alert('Veuillez entrer votre adresse email pour réinitialiser votre mot de passe.');
+                return;
+            }
+
+            try {
+                await resetPassword(email);
+                alert('Un email de réinitialisation a été envoyé à ' + email);
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        });
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', async () => {
+            const user = await getCurrentUser();
+            if (user) {
+                window.location.href = './index.html';
+            }
+        });
+    </script>
+</body>
+</html>

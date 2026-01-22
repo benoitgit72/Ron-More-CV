@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SyncCV Admin</title>
+    <link rel="stylesheet" href="css/admin-styles.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>SyncCV</h1>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="personal-info">
+                    <span class="icon">📝</span>
+                    <span>Informations personnelles</span>
+                </a>
+                <a href="#" class="nav-item" data-section="experiences">
+                    <span class="icon">💼</span>
+                    <span>Expériences</span>
+                </a>
+                <a href="#" class="nav-item" data-section="formations">
+                    <span class="icon">🎓</span>
+                    <span>Formations</span>
+                </a>
+                <a href="#" class="nav-item" data-section="competences">
+                    <span class="icon">💪</span>
+                    <span>Compétences</span>
+                </a>
+                <div style="height: 1px; background: var(--border-color); margin: 10px 0;"></div>
+                <a href="#" class="nav-item" data-section="settings">
+                    <span class="icon">⚙️</span>
+                    <span>Paramètres</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <h3 id="userName">Chargement...</h3>
+                        <p id="userEmail">...</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-full btn-sm" id="logoutBtn">
+                    Déconnexion
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <h2 id="sectionTitle">Informations personnelles</h2>
+                <div class="topbar-actions">
+                    <a href="#" id="previewCV" class="btn btn-primary btn-sm" target="_blank">
+                        Prévisualiser mon CV
+                    </a>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <!-- Personal Info Section -->
+                <section id="section-personal-info" class="content-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Informations de base</h3>
+                        </div>
+                        <form id="personalInfoForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="nom">Nom complet *</label>
+                                    <input type="text" id="nom" name="nom" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="titre">Titre professionnel *</label>
+                                    <input type="text" id="titre" name="titre" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="titre_en">Professional Title (English)</label>
+                                    <input type="text" id="titre_en" name="titre_en">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="telephone">Téléphone</label>
+                                    <input type="tel" id="telephone" name="telephone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="linkedin">LinkedIn</label>
+                                    <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/...">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bio">Bio / Résumé (Français) *</label>
+                                <textarea id="bio" name="bio" rows="4" required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bio_en">Bio / Summary (English)</label>
+                                <textarea id="bio_en" name="bio_en" rows="4"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="photo_url">URL de la photo de profil</label>
+                                <input type="url" id="photo_url" name="photo_url" placeholder="https://...">
+                                <small class="help-text">Utilisez un service comme Imgur ou hébergez votre image</small>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success">
+                                    Enregistrer les modifications
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Experiences Section -->
+                <section id="section-experiences" class="content-section" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Expériences professionnelles</h3>
+                            <button class="btn btn-primary btn-sm" id="addExperienceBtn">
+                                + Ajouter une expérience
+                            </button>
+                        </div>
+                        <ul id="experiencesList" class="data-list"></ul>
+                        <div id="experiencesEmpty" class="empty-state">
+                            <div class="icon">💼</div>
+                            <h3>Aucune expérience</h3>
+                            <p>Commencez par ajouter votre première expérience professionnelle</p>
+                            <button class="btn btn-primary" onclick="document.getElementById('addExperienceBtn').click()">
+                                Ajouter une expérience
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Formations Section -->
+                <section id="section-formations" class="content-section" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Formations et certifications</h3>
+                            <button class="btn btn-primary btn-sm" id="addFormationBtn">
+                                + Ajouter une formation
+                            </button>
+                        </div>
+                        <ul id="formationsList" class="data-list"></ul>
+                        <div id="formationsEmpty" class="empty-state">
+                            <div class="icon">🎓</div>
+                            <h3>Aucune formation</h3>
+                            <p>Ajoutez vos diplômes et certifications</p>
+                            <button class="btn btn-primary" onclick="document.getElementById('addFormationBtn').click()">
+                                Ajouter une formation
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Competences Section -->
+                <section id="section-competences" class="content-section" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Compétences techniques</h3>
+                            <button class="btn btn-primary btn-sm" id="addCompetenceBtn">
+                                + Ajouter une compétence
+                            </button>
+                        </div>
+                        <ul id="competencesList" class="data-list"></ul>
+                        <div id="competencesEmpty" class="empty-state">
+                            <div class="icon">💪</div>
+                            <h3>Aucune compétence</h3>
+                            <p>Organisez vos compétences par catégories</p>
+                            <button class="btn btn-primary" onclick="document.getElementById('addCompetenceBtn').click()">
+                                Ajouter une compétence
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="section-settings" class="content-section" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Paramètres du compte</h3>
+                        </div>
+                        <form id="settingsForm">
+                            <div class="form-group">
+                                <label for="slug">Slug (identifiant unique de votre CV)</label>
+                                <input type="text" id="slug" name="slug" readonly disabled>
+                                <small class="help-text">Votre CV est accessible via: <span id="cvUrl"></span></small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="formspree_id">Formspree Form ID</label>
+                                <input type="text" id="formspree_id" name="formspree_id">
+                                <small class="help-text">Pour recevoir les messages du formulaire de contact</small>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success">
+                                    Enregistrer les paramètres
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success/Error Toast -->
+    <div id="toast" class="toast" hidden></div>
+
+    <!-- Supabase Client -->
+    <script src="../js/supabase-client.js"></script>
+
+    <!-- Auth Module -->
+    <script src="js/auth.js"></script>
+
+    <!-- Data Manager -->
+    <script src="js/data-manager.js"></script>
+
+    <!-- Main Dashboard Script -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
