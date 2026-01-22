@@ -571,7 +571,169 @@ function formatDate(dateString) {
  * Modal helpers (simplified versions - to be expanded)
  */
 function showExperienceModal() {
-    alert('Modal d\'ajout d\'expérience à implémenter. Pour l\'instant, utilisez Supabase Studio.');
+    // Créer le modal d'ajout
+    const modal = createNewExperienceModal();
+    document.body.appendChild(modal);
+
+    // Focus sur le premier champ
+    setTimeout(() => {
+        modal.querySelector('input').focus();
+    }, 100);
+}
+
+/**
+ * Créer le modal d'ajout d'expérience
+ */
+function createNewExperienceModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'experienceModal';
+
+    modal.innerHTML = `
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Ajouter une expérience professionnelle</h3>
+                <button class="modal-close" onclick="closeExperienceModal()">&times;</button>
+            </div>
+
+            <form id="experienceEditForm" class="modal-body">
+                <!-- Période -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="exp_periode_debut">Date de début *</label>
+                        <input type="date" id="exp_periode_debut" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="exp_periode_fin">Date de fin</label>
+                        <input type="date" id="exp_periode_fin">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="exp_en_cours" onchange="toggleEndDate()">
+                        <span>Poste actuel (en cours)</span>
+                    </label>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version française -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇫🇷 Version française</h4>
+
+                <div class="form-group">
+                    <label for="exp_titre">Titre du poste (FR) *</label>
+                    <input type="text" id="exp_titre" required placeholder="Ex: Développeur Full Stack">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_entreprise">Entreprise (FR) *</label>
+                    <input type="text" id="exp_entreprise" required placeholder="Ex: Acme Corporation">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_description">Description (FR)</label>
+                    <textarea id="exp_description" rows="4" placeholder="Décrivez vos responsabilités et réalisations..."></textarea>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version anglaise -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇬🇧 Version anglaise</h4>
+
+                <div class="form-group">
+                    <label for="exp_titre_en">Titre du poste (EN)</label>
+                    <input type="text" id="exp_titre_en" placeholder="Ex: Full Stack Developer">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_entreprise_en">Entreprise (EN)</label>
+                    <input type="text" id="exp_entreprise_en" placeholder="Ex: Acme Corporation">
+                </div>
+
+                <div class="form-group">
+                    <label for="exp_description_en">Description (EN)</label>
+                    <textarea id="exp_description_en" rows="4" placeholder="Describe your responsibilities and achievements..."></textarea>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Compétences (tags) -->
+                <div class="form-group">
+                    <label for="exp_competences">Compétences / Technologies</label>
+                    <div id="exp_tags_container" class="tags-container">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="exp_new_tag" placeholder="Ex: JavaScript, React, Node.js..." onkeypress="handleTagKeyPress(event)">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addTag()">+ Ajouter</button>
+                    </div>
+                    <small class="help-text">Appuyez sur Entrée ou cliquez sur "Ajouter" pour ajouter un tag</small>
+                </div>
+            </form>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeExperienceModal()">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="saveNewExperience()">
+                    💾 Créer l'expérience
+                </button>
+            </div>
+        </div>
+    `;
+
+    return modal;
+}
+
+/**
+ * Sauvegarder une nouvelle expérience
+ */
+async function saveNewExperience() {
+    try {
+        // Récupérer tous les tags
+        const tagElements = document.querySelectorAll('#exp_tags_container .tag-item');
+        const competences = Array.from(tagElements).map(el => {
+            return el.textContent.replace('×', '').trim();
+        });
+
+        // Construire l'objet expérience
+        const experience = {
+            titre: document.getElementById('exp_titre').value.trim(),
+            entreprise: document.getElementById('exp_entreprise').value.trim(),
+            description: document.getElementById('exp_description').value.trim() || null,
+            titre_en: document.getElementById('exp_titre_en').value.trim() || null,
+            entreprise_en: document.getElementById('exp_entreprise_en').value.trim() || null,
+            description_en: document.getElementById('exp_description_en').value.trim() || null,
+            periode_debut: document.getElementById('exp_periode_debut').value,
+            periode_fin: document.getElementById('exp_en_cours').checked ? null : document.getElementById('exp_periode_fin').value || null,
+            en_cours: document.getElementById('exp_en_cours').checked,
+            competences: competences.length > 0 ? competences : null,
+            ordre: 0 // Par défaut, mettre en première position
+        };
+
+        // Validation
+        if (!experience.titre || !experience.entreprise || !experience.periode_debut) {
+            showToast('Veuillez remplir tous les champs obligatoires', 'error');
+            return;
+        }
+
+        if (!experience.en_cours && !experience.periode_fin) {
+            showToast('Veuillez spécifier une date de fin ou cocher "Poste actuel"', 'error');
+            return;
+        }
+
+        // Créer l'expérience
+        await createExperience(currentUser.id, experience);
+
+        // Fermer le modal
+        closeExperienceModal();
+
+        // Recharger la liste
+        await loadExperiences();
+
+        showToast('Expérience créée avec succès', 'success');
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur lors de la création: ' + error.message, 'error');
+    }
 }
 
 async function editExperience(id) {
