@@ -678,8 +678,20 @@ function createNewExperienceModal() {
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <input type="text" id="exp_new_tag" placeholder="Ex: JavaScript, React, Node.js..." onkeypress="handleTagKeyPress(event)">
                         <button type="button" class="btn btn-secondary btn-sm" onclick="addTag()">+ Ajouter</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="suggestTags()" id="suggestTagsBtn">
+                            ✨ Suggérer
+                        </button>
                     </div>
                     <small class="help-text">Appuyez sur Entrée ou cliquez sur "Ajouter" pour ajouter un tag</small>
+
+                    <!-- Suggestions container -->
+                    <div id="tag_suggestions" style="margin-top: 15px; display: none;">
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500;">
+                            💡 Suggestions (cliquez pour ajouter):
+                        </div>
+                        <div id="tag_suggestions_list" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        </div>
+                    </div>
                 </div>
             </form>
 
@@ -1036,8 +1048,20 @@ function createExperienceModal(exp) {
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <input type="text" id="exp_new_tag" placeholder="Ex: JavaScript, React, Node.js..." onkeypress="handleTagKeyPress(event)">
                         <button type="button" class="btn btn-secondary btn-sm" onclick="addTag()">+ Ajouter</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="suggestTags()" id="suggestTagsBtn">
+                            ✨ Suggérer
+                        </button>
                     </div>
                     <small class="help-text">Appuyez sur Entrée ou cliquez sur "Ajouter" pour ajouter un tag</small>
+
+                    <!-- Suggestions container -->
+                    <div id="tag_suggestions" style="margin-top: 15px; display: none;">
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500;">
+                            💡 Suggestions (cliquez pour ajouter):
+                        </div>
+                        <div id="tag_suggestions_list" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        </div>
+                    </div>
                 </div>
             </form>
 
@@ -1113,6 +1137,168 @@ function handleTagKeyPress(event) {
         event.preventDefault();
         addTag();
     }
+}
+
+/**
+ * Suggérer des tags basés sur la description
+ */
+async function suggestTags() {
+    try {
+        // Récupérer les descriptions (FR et/ou EN)
+        const descriptionFr = document.getElementById('exp_description').value.trim();
+        const descriptionEn = document.getElementById('exp_description_en').value.trim();
+
+        // Combiner les descriptions disponibles
+        const combinedDescription = [descriptionFr, descriptionEn].filter(d => d).join('\n\n');
+
+        // Validation
+        if (!combinedDescription) {
+            showToast('Veuillez remplir au moins une description avant de suggérer des tags', 'error');
+            return;
+        }
+
+        // Récupérer les tags existants
+        const tagElements = document.querySelectorAll('#exp_tags_container .tag-item');
+        const existingTags = Array.from(tagElements).map(el => {
+            return el.textContent.replace('×', '').trim();
+        });
+
+        // Désactiver le bouton pendant le chargement
+        const button = document.getElementById('suggestTagsBtn');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '⏳ Analyse...';
+
+        // Appeler l'API de suggestions
+        const response = await fetch('/api/suggest-tags', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                description: combinedDescription,
+                existingTags: existingTags
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erreur lors de la suggestion');
+        }
+
+        const data = await response.json();
+        const suggestions = data.suggestions || [];
+
+        // Afficher les suggestions
+        if (suggestions.length === 0) {
+            showToast('Aucune nouvelle suggestion trouvée', 'info');
+        } else {
+            displayTagSuggestions(suggestions);
+            showToast(`${suggestions.length} suggestion${suggestions.length > 1 ? 's' : ''} trouvée${suggestions.length > 1 ? 's' : ''}`, 'success');
+        }
+
+        // Réactiver le bouton
+        button.disabled = false;
+        button.innerHTML = originalText;
+
+    } catch (error) {
+        console.error('Erreur de suggestion:', error);
+        showToast('Erreur: ' + error.message, 'error');
+
+        // Réactiver le bouton
+        const button = document.getElementById('suggestTagsBtn');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '✨ Suggérer';
+        }
+    }
+}
+
+/**
+ * Afficher les suggestions de tags
+ */
+function displayTagSuggestions(suggestions) {
+    const container = document.getElementById('tag_suggestions');
+    const list = document.getElementById('tag_suggestions_list');
+
+    if (!container || !list) return;
+
+    // Vider les suggestions précédentes
+    list.innerHTML = '';
+
+    // Créer les badges de suggestions
+    suggestions.forEach(tag => {
+        const badge = document.createElement('span');
+        badge.className = 'tag-suggestion';
+        badge.textContent = tag;
+        badge.style.cssText = `
+            display: inline-flex;
+            align-items: center;
+            background: var(--success-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        `;
+        badge.onmouseover = () => {
+            badge.style.background = 'var(--primary-color)';
+        };
+        badge.onmouseout = () => {
+            badge.style.background = 'var(--success-color)';
+        };
+        badge.onclick = () => addSuggestedTag(tag, badge);
+
+        list.appendChild(badge);
+    });
+
+    // Afficher le container
+    container.style.display = 'block';
+}
+
+/**
+ * Ajouter un tag suggéré
+ */
+function addSuggestedTag(tag, badgeElement) {
+    // Vérifier si le tag n'existe pas déjà
+    const tagElements = document.querySelectorAll('#exp_tags_container .tag-item');
+    const existingTags = Array.from(tagElements).map(el => {
+        return el.textContent.replace('×', '').trim().toLowerCase();
+    });
+
+    if (existingTags.includes(tag.toLowerCase())) {
+        showToast('Ce tag existe déjà', 'info');
+        return;
+    }
+
+    // Ajouter le tag au container
+    const container = document.getElementById('exp_tags_container');
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag-item';
+    tagElement.innerHTML = `
+        ${tag}
+        <button type="button" class="tag-remove" onclick="removeTag(this)">×</button>
+    `;
+
+    container.appendChild(tagElement);
+
+    // Retirer la suggestion de la liste
+    if (badgeElement) {
+        badgeElement.remove();
+    }
+
+    // Masquer le container de suggestions si vide
+    const list = document.getElementById('tag_suggestions_list');
+    if (list && list.children.length === 0) {
+        const suggestionsContainer = document.getElementById('tag_suggestions');
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'none';
+        }
+    }
+
+    showToast(`Tag "${tag}" ajouté`, 'success');
 }
 
 /**
