@@ -339,7 +339,18 @@ body {
     padding: 20px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
+    flex-direction: column;
     align-items: center;
+    gap: 15px;
+    transition: padding 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-header {
+    padding: 15px 10px;
+}
+
+.sidebar:not(.collapsed) .sidebar-header {
+    flex-direction: row;
     justify-content: space-between;
 }
 
@@ -347,12 +358,16 @@ body {
     font-size: 24px;
     color: var(--primary-color);
     font-weight: bold;
-    transition: opacity 0.2s ease;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .sidebar.collapsed .sidebar-header h1 {
-    opacity: 0;
-    pointer-events: none;
+    font-size: 12px;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 2px;
 }
 
 .sidebar-toggle {
@@ -368,6 +383,7 @@ body {
     transition: var(--transition);
     color: var(--text-secondary);
     font-size: 14px;
+    flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
