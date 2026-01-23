@@ -468,7 +468,7 @@ function createFormationItem(formation) {
 }
 
 /**
- * Load competences section
+ * Load competences section (bilingual display)
  */
 async function loadCompetences() {
     const competences = await getCompetences(currentUser.id);
@@ -497,17 +497,33 @@ async function loadCompetences() {
 
     Object.entries(grouped).forEach(([categorie, comps]) => {
         const categoryItem = document.createElement('li');
-        categoryItem.className = 'data-item';
+        categoryItem.className = 'data-item exp-bilingual';
+
         categoryItem.innerHTML = `
-            <div class="data-item-header">
-                <div class="data-item-title">${categorie}</div>
+            <div class="exp-header">
+                <div class="exp-date-badge">${categorie}</div>
             </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-                ${comps.map(comp => `
-                    <span class="badge badge-info" style="cursor: pointer;" onclick="editCompetence('${comp.id}')">
-                        ${comp.competence} ${comp.niveau ? '• ' + comp.niveau : ''}
-                    </span>
-                `).join('')}
+            <div class="exp-content">
+                <div class="exp-lang-column">
+                    <div class="lang-label">🇫🇷 Français</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                        ${comps.map(comp => `
+                            <span class="badge badge-info" style="cursor: pointer;" onclick="editCompetence('${comp.id}')">
+                                ${comp.competence || '<em>Non renseigné</em>'} ${comp.niveau ? '• ' + comp.niveau : ''}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="exp-lang-column">
+                    <div class="lang-label">🇬🇧 English</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                        ${comps.map(comp => `
+                            <span class="badge badge-info" style="cursor: pointer;" onclick="editCompetence('${comp.id}')">
+                                ${comp.competence_en || '<em>Not specified</em>'} ${comp.niveau_en ? '• ' + comp.niveau_en : ''}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
             </div>
         `;
         list.appendChild(categoryItem);
