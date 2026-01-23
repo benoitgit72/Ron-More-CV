@@ -1386,8 +1386,151 @@ async function removeExperience(id) {
     }
 }
 
+/**
+ * Afficher le modal d'ajout de formation
+ */
 function showFormationModal() {
-    alert('Modal d\'ajout de formation à implémenter. Pour l\'instant, utilisez Supabase Studio.');
+    // Créer le modal d'ajout
+    const modal = createNewFormationModal();
+    document.body.appendChild(modal);
+
+    // Focus sur le premier champ
+    setTimeout(() => {
+        modal.querySelector('input').focus();
+    }, 100);
+}
+
+/**
+ * Créer le modal d'ajout de formation
+ */
+function createNewFormationModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'formationModal';
+
+    modal.innerHTML = `
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Ajouter une formation</h3>
+                <button class="modal-close" onclick="closeFormationModal()">&times;</button>
+            </div>
+
+            <form id="formationEditForm" class="modal-body">
+                <!-- Période -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="form_annee_debut">Année de début</label>
+                        <input type="text" id="form_annee_debut" placeholder="Ex: 2018">
+                    </div>
+                    <div class="form-group">
+                        <label for="form_annee_fin">Année de fin</label>
+                        <input type="text" id="form_annee_fin" placeholder="Ex: 2020">
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version française -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇫🇷 Version française</h4>
+
+                <div class="form-group">
+                    <label for="form_diplome">Diplôme (FR) *</label>
+                    <input type="text" id="form_diplome" required placeholder="Ex: Master en Informatique">
+                </div>
+
+                <div class="form-group">
+                    <label for="form_institution">Institution (FR) *</label>
+                    <input type="text" id="form_institution" required placeholder="Ex: Université de Montréal">
+                </div>
+
+                <div class="form-group">
+                    <label for="form_description">Description (FR)</label>
+                    <textarea id="form_description" rows="3" placeholder="Description optionnelle de la formation..."></textarea>
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px; text-align: center;">
+                    <button type="button" class="btn btn-secondary" onclick="translateFormationToEnglish()" id="translateFormToEnBtn">
+                        🇬🇧 Traduire vers l'anglais
+                    </button>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version anglaise -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇬🇧 Version anglaise</h4>
+
+                <div class="form-group">
+                    <label for="form_diplome_en">Diplôme (EN)</label>
+                    <input type="text" id="form_diplome_en" placeholder="Ex: Master's Degree in Computer Science">
+                </div>
+
+                <div class="form-group">
+                    <label for="form_institution_en">Institution (EN)</label>
+                    <input type="text" id="form_institution_en" placeholder="Ex: University of Montreal">
+                </div>
+
+                <div class="form-group">
+                    <label for="form_description_en">Description (EN)</label>
+                    <textarea id="form_description_en" rows="3" placeholder="Optional description of the education..."></textarea>
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px; text-align: center;">
+                    <button type="button" class="btn btn-secondary" onclick="translateFormationToFrench()" id="translateFormToFrBtn">
+                        🇫🇷 Traduire vers le français
+                    </button>
+                </div>
+            </form>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeFormationModal()">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="saveNewFormation()">
+                    💾 Créer la formation
+                </button>
+            </div>
+        </div>
+    `;
+
+    return modal;
+}
+
+/**
+ * Sauvegarder une nouvelle formation
+ */
+async function saveNewFormation() {
+    try {
+        // Construire l'objet formation
+        const formation = {
+            diplome: document.getElementById('form_diplome').value.trim(),
+            institution: document.getElementById('form_institution').value.trim(),
+            description: document.getElementById('form_description').value.trim() || null,
+            diplome_en: document.getElementById('form_diplome_en').value.trim() || null,
+            institution_en: document.getElementById('form_institution_en').value.trim() || null,
+            description_en: document.getElementById('form_description_en').value.trim() || null,
+            annee_debut: document.getElementById('form_annee_debut').value.trim() || null,
+            annee_fin: document.getElementById('form_annee_fin').value.trim() || null,
+            ordre: 0 // Par défaut, mettre en première position
+        };
+
+        // Validation
+        if (!formation.diplome || !formation.institution) {
+            showToast('Veuillez remplir tous les champs obligatoires (Diplôme et Institution)', 'error');
+            return;
+        }
+
+        // Créer la formation
+        await createFormation(currentUser.id, formation);
+
+        // Fermer le modal
+        closeFormationModal();
+
+        // Recharger la liste
+        await loadFormations();
+
+        showToast('Formation créée avec succès', 'success');
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur lors de la création: ' + error.message, 'error');
+    }
 }
 
 /**
