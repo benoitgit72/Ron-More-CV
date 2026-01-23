@@ -1883,10 +1883,439 @@ async function removeFormation(id) {
     }
 }
 
+/**
+ * Afficher le modal d'ajout de compétence
+ */
 function showCompetenceModal() {
-    alert('Modal d\'ajout de compétence à implémenter. Pour l\'instant, utilisez Supabase Studio.');
+    const modal = createNewCompetenceModal();
+    document.body.appendChild(modal);
+
+    setTimeout(() => {
+        modal.querySelector('input').focus();
+    }, 100);
 }
 
-function editCompetence(id) {
-    alert(`Modification de la compétence ${id} à implémenter`);
+/**
+ * Créer le modal d'ajout de compétence
+ */
+function createNewCompetenceModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'competenceModal';
+
+    modal.innerHTML = `
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Ajouter une compétence</h3>
+                <button class="modal-close" onclick="closeCompetenceModal()">&times;</button>
+            </div>
+
+            <form id="competenceEditForm" class="modal-body">
+                <!-- Catégorie (français) -->
+                <div class="form-group">
+                    <label for="comp_categorie">Catégorie (FR) *</label>
+                    <input type="text" id="comp_categorie" required placeholder="Ex: Langages de programmation">
+                    <small class="help-text">Ex: Langages de programmation, Frameworks, Outils, etc.</small>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version française -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇫🇷 Version française</h4>
+
+                <div class="form-group">
+                    <label for="comp_competence">Compétence (FR) *</label>
+                    <input type="text" id="comp_competence" required placeholder="Ex: JavaScript">
+                </div>
+
+                <div class="form-group">
+                    <label for="comp_niveau">Niveau (FR)</label>
+                    <input type="text" id="comp_niveau" placeholder="Ex: Avancé">
+                    <small class="help-text">Optionnel: Débutant, Intermédiaire, Avancé, Expert...</small>
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px; text-align: center;">
+                    <button type="button" class="btn btn-secondary" onclick="translateCompetenceToEnglish()" id="translateCompToEnBtn">
+                        🇬🇧 Traduire vers l'anglais
+                    </button>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version anglaise -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇬🇧 Version anglaise</h4>
+
+                <div class="form-group">
+                    <label for="comp_categorie_en">Catégorie (EN)</label>
+                    <input type="text" id="comp_categorie_en" placeholder="Ex: Programming Languages">
+                </div>
+
+                <div class="form-group">
+                    <label for="comp_competence_en">Compétence (EN)</label>
+                    <input type="text" id="comp_competence_en" placeholder="Ex: JavaScript">
+                </div>
+
+                <div class="form-group">
+                    <label for="comp_niveau_en">Niveau (EN)</label>
+                    <input type="text" id="comp_niveau_en" placeholder="Ex: Advanced">
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px; text-align: center;">
+                    <button type="button" class="btn btn-secondary" onclick="translateCompetenceToFrench()" id="translateCompToFrBtn">
+                        🇫🇷 Traduire vers le français
+                    </button>
+                </div>
+            </form>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCompetenceModal()">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="saveNewCompetence()">
+                    💾 Créer la compétence
+                </button>
+            </div>
+        </div>
+    `;
+
+    return modal;
+}
+
+/**
+ * Sauvegarder une nouvelle compétence
+ */
+async function saveNewCompetence() {
+    try {
+        const competence = {
+            categorie: document.getElementById('comp_categorie').value.trim(),
+            competence: document.getElementById('comp_competence').value.trim(),
+            niveau: document.getElementById('comp_niveau').value.trim() || null,
+            categorie_en: document.getElementById('comp_categorie_en').value.trim() || null,
+            competence_en: document.getElementById('comp_competence_en').value.trim() || null,
+            niveau_en: document.getElementById('comp_niveau_en').value.trim() || null,
+            ordre: 0
+        };
+
+        if (!competence.categorie || !competence.competence) {
+            showToast('Veuillez remplir tous les champs obligatoires (Catégorie et Compétence)', 'error');
+            return;
+        }
+
+        await createCompetence(currentUser.id, competence);
+        closeCompetenceModal();
+        await loadCompetences();
+        showToast('Compétence créée avec succès', 'success');
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur lors de la création: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Modifier une compétence existante
+ */
+async function editCompetence(id) {
+    try {
+        const competences = await getCompetences(currentUser.id);
+        const competence = competences.find(c => c.id === id);
+
+        if (!competence) {
+            showToast('Compétence non trouvée', 'error');
+            return;
+        }
+
+        const modal = createCompetenceModal(competence);
+        document.body.appendChild(modal);
+
+        setTimeout(() => {
+            modal.querySelector('input').focus();
+        }, 100);
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur lors du chargement de la compétence', 'error');
+    }
+}
+
+/**
+ * Créer le modal de modification de compétence
+ */
+function createCompetenceModal(competence) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'competenceModal';
+
+    modal.innerHTML = `
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Modifier la compétence</h3>
+                <button class="modal-close" onclick="closeCompetenceModal()">&times;</button>
+            </div>
+
+            <form id="competenceEditForm" class="modal-body">
+                <!-- Catégorie (français) -->
+                <div class="form-group">
+                    <label for="comp_categorie">Catégorie (FR) *</label>
+                    <input type="text" id="comp_categorie" required placeholder="Ex: Langages de programmation" value="${competence.categorie || ''}">
+                    <small class="help-text">Ex: Langages de programmation, Frameworks, Outils, etc.</small>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version française -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇫🇷 Version française</h4>
+
+                <div class="form-group">
+                    <label for="comp_competence">Compétence (FR) *</label>
+                    <input type="text" id="comp_competence" required placeholder="Ex: JavaScript" value="${competence.competence || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label for="comp_niveau">Niveau (FR)</label>
+                    <input type="text" id="comp_niveau" placeholder="Ex: Avancé" value="${competence.niveau || ''}">
+                    <small class="help-text">Optionnel: Débutant, Intermédiaire, Avancé, Expert...</small>
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px; text-align: center;">
+                    <button type="button" class="btn btn-secondary" onclick="translateCompetenceToEnglish()" id="translateCompToEnBtn">
+                        🇬🇧 Traduire vers l'anglais
+                    </button>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Version anglaise -->
+                <h4 style="margin-bottom: 15px; color: var(--text-primary);">🇬🇧 Version anglaise</h4>
+
+                <div class="form-group">
+                    <label for="comp_categorie_en">Catégorie (EN)</label>
+                    <input type="text" id="comp_categorie_en" placeholder="Ex: Programming Languages" value="${competence.categorie_en || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label for="comp_competence_en">Compétence (EN)</label>
+                    <input type="text" id="comp_competence_en" placeholder="Ex: JavaScript" value="${competence.competence_en || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label for="comp_niveau_en">Niveau (EN)</label>
+                    <input type="text" id="comp_niveau_en" placeholder="Ex: Advanced" value="${competence.niveau_en || ''}">
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px; text-align: center;">
+                    <button type="button" class="btn btn-secondary" onclick="translateCompetenceToFrench()" id="translateCompToFrBtn">
+                        🇫🇷 Traduire vers le français
+                    </button>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Zone de suppression -->
+                <div style="margin-top: 20px; padding: 15px; background: var(--bg-tertiary); border-radius: var(--border-radius); border-left: 4px solid var(--danger-color);">
+                    <h4 style="margin: 0 0 10px 0; color: var(--danger-color); font-size: 14px;">Zone de danger</h4>
+                    <button type="button" class="btn btn-danger" onclick="removeCompetenceFromModal('${competence.id}')">
+                        🗑️ Supprimer cette compétence
+                    </button>
+                </div>
+            </form>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCompetenceModal()">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="saveCompetence('${competence.id}')">
+                    💾 Enregistrer
+                </button>
+            </div>
+        </div>
+    `;
+
+    return modal;
+}
+
+/**
+ * Fermer le modal de compétence
+ */
+function closeCompetenceModal() {
+    const modal = document.getElementById('competenceModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+/**
+ * Sauvegarder la compétence modifiée
+ */
+async function saveCompetence(id) {
+    try {
+        const competence = {
+            categorie: document.getElementById('comp_categorie').value.trim(),
+            competence: document.getElementById('comp_competence').value.trim(),
+            niveau: document.getElementById('comp_niveau').value.trim() || null,
+            categorie_en: document.getElementById('comp_categorie_en').value.trim() || null,
+            competence_en: document.getElementById('comp_competence_en').value.trim() || null,
+            niveau_en: document.getElementById('comp_niveau_en').value.trim() || null
+        };
+
+        if (!competence.categorie || !competence.competence) {
+            showToast('Veuillez remplir tous les champs obligatoires (Catégorie et Compétence)', 'error');
+            return;
+        }
+
+        await updateCompetence(id, competence);
+        closeCompetenceModal();
+        await loadCompetences();
+        showToast('Compétence mise à jour avec succès', 'success');
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast('Erreur lors de la sauvegarde: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Traduire les champs français vers l'anglais (compétences)
+ */
+async function translateCompetenceToEnglish() {
+    try {
+        const categorie = document.getElementById('comp_categorie').value.trim();
+        const competence = document.getElementById('comp_competence').value.trim();
+        const niveau = document.getElementById('comp_niveau').value.trim();
+
+        if (!categorie && !competence && !niveau) {
+            showToast('Veuillez remplir au moins un champ français avant de traduire', 'error');
+            return;
+        }
+
+        const button = document.getElementById('translateCompToEnBtn');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '⏳ Traduction en cours...';
+
+        const response = await fetch('/api/translate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text: {
+                    titre: categorie,
+                    entreprise: competence,
+                    description: niveau
+                },
+                targetLanguage: 'en'
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erreur lors de la traduction');
+        }
+
+        const data = await response.json();
+        const translation = data.translation;
+
+        if (translation.titre) {
+            document.getElementById('comp_categorie_en').value = translation.titre;
+        }
+        if (translation.entreprise) {
+            document.getElementById('comp_competence_en').value = translation.entreprise;
+        }
+        if (translation.description) {
+            document.getElementById('comp_niveau_en').value = translation.description;
+        }
+
+        showToast('Traduction réussie vers l\'anglais', 'success');
+        button.disabled = false;
+        button.innerHTML = originalText;
+
+    } catch (error) {
+        console.error('Erreur de traduction:', error);
+        showToast('Erreur: ' + error.message, 'error');
+
+        const button = document.getElementById('translateCompToEnBtn');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '🇬🇧 Traduire vers l\'anglais';
+        }
+    }
+}
+
+/**
+ * Traduire les champs anglais vers le français (compétences)
+ */
+async function translateCompetenceToFrench() {
+    try {
+        const categorie = document.getElementById('comp_categorie_en').value.trim();
+        const competence = document.getElementById('comp_competence_en').value.trim();
+        const niveau = document.getElementById('comp_niveau_en').value.trim();
+
+        if (!categorie && !competence && !niveau) {
+            showToast('Veuillez remplir au moins un champ anglais avant de traduire', 'error');
+            return;
+        }
+
+        const button = document.getElementById('translateCompToFrBtn');
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '⏳ Traduction en cours...';
+
+        const response = await fetch('/api/translate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text: {
+                    titre: categorie,
+                    entreprise: competence,
+                    description: niveau
+                },
+                targetLanguage: 'fr'
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erreur lors de la traduction');
+        }
+
+        const data = await response.json();
+        const translation = data.translation;
+
+        if (translation.titre) {
+            document.getElementById('comp_categorie').value = translation.titre;
+        }
+        if (translation.entreprise) {
+            document.getElementById('comp_competence').value = translation.entreprise;
+        }
+        if (translation.description) {
+            document.getElementById('comp_niveau').value = translation.description;
+        }
+
+        showToast('Traduction réussie vers le français', 'success');
+        button.disabled = false;
+        button.innerHTML = originalText;
+
+    } catch (error) {
+        console.error('Erreur de traduction:', error);
+        showToast('Erreur: ' + error.message, 'error');
+
+        const button = document.getElementById('translateCompToFrBtn');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '🇫🇷 Traduire vers le français';
+        }
+    }
+}
+
+/**
+ * Supprimer une compétence depuis le modal
+ */
+async function removeCompetenceFromModal(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette compétence?')) {
+        try {
+            await deleteCompetence(id);
+            closeCompetenceModal();
+            await loadCompetences();
+            showToast('Compétence supprimée', 'success');
+        } catch (error) {
+            console.error('Erreur:', error);
+            showToast('Erreur lors de la suppression', 'error');
+        }
+    }
 }
