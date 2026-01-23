@@ -425,22 +425,19 @@ async function loadFormations() {
 }
 
 /**
- * Create formation list item
+ * Create formation list item (bilingual display)
  */
 function createFormationItem(formation) {
     const li = document.createElement('li');
-    li.className = 'data-item';
+    li.className = 'data-item exp-bilingual';
 
     const annees = formation.annee_debut && formation.annee_fin ?
         `${formation.annee_debut} - ${formation.annee_fin}` :
         formation.annee_debut || '';
 
     li.innerHTML = `
-        <div class="data-item-header">
-            <div>
-                <div class="data-item-title">${formation.diplome}</div>
-                <div class="data-item-meta">${formation.institution} ${annees ? '• ' + annees : ''}</div>
-            </div>
+        <div class="exp-header">
+            <div class="exp-date-badge">${annees || 'Date non spécifiée'}</div>
             <div class="data-item-actions">
                 <button class="btn btn-secondary btn-sm" onclick="editFormation('${formation.id}')">✏️ Modifier</button>
                 <button class="btn btn-danger btn-sm" onclick="removeFormation('${formation.id}')">
@@ -449,6 +446,20 @@ function createFormationItem(formation) {
                         <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                     </svg>
                 </button>
+            </div>
+        </div>
+        <div class="exp-content">
+            <div class="exp-lang-column">
+                <div class="lang-label">🇫🇷 Français</div>
+                <div class="exp-title">${formation.diplome || '<em>Non renseigné</em>'}</div>
+                <div class="exp-company">${formation.institution || '<em>Non renseigné</em>'}</div>
+                ${formation.description ? `<div class="exp-description">${formation.description}</div>` : ''}
+            </div>
+            <div class="exp-lang-column">
+                <div class="lang-label">🇬🇧 English</div>
+                <div class="exp-title">${formation.diplome_en || '<em>Not specified</em>'}</div>
+                <div class="exp-company">${formation.institution_en || '<em>Not specified</em>'}</div>
+                ${formation.description_en ? `<div class="exp-description">${formation.description_en}</div>` : ''}
             </div>
         </div>
     `;
