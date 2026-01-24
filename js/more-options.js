@@ -109,7 +109,7 @@ async function generatePDF() {
         container.id = 'pdf-temp-container';
         container.innerHTML = pdfHTML;
 
-        // Style the container to be visible but overlay the loading screen
+        // Style the container - MUST be above loading overlay (z-index 10001 > 10000)
         container.style.cssText = `
             position: fixed;
             top: 50%;
@@ -119,9 +119,10 @@ async function generatePDF() {
             max-height: 90vh;
             overflow: auto;
             background: white;
-            z-index: 9999;
+            z-index: 10001;
             padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            border: 2px solid #1e40af;
         `;
 
         document.body.appendChild(container);
