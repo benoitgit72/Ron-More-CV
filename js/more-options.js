@@ -102,29 +102,33 @@ async function generatePDF() {
         // Build professional PDF HTML
         const pdfHTML = buildPDFHTML(cvData, currentLang);
         console.log('HTML généré, longueur:', pdfHTML.length);
+        console.log('Aperçu HTML:', pdfHTML.substring(0, 500));
 
-        // Create a temporary container - VISIBLE for html2pdf to render
+        // Create a temporary container - MUST BE VISIBLE for html2canvas
         const container = document.createElement('div');
         container.id = 'pdf-temp-container';
         container.innerHTML = pdfHTML;
 
-        // Style the container to be visible but fixed position
+        // Style the container to be visible but overlay the loading screen
         container.style.cssText = `
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 210mm;
+            max-height: 90vh;
+            overflow: auto;
             background: white;
-            z-index: -1;
-            visibility: hidden;
-            pointer-events: none;
+            z-index: 9999;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         `;
 
         document.body.appendChild(container);
-        console.log('Conteneur ajouté au DOM');
+        console.log('Conteneur ajouté au DOM et visible');
 
-        // Wait for DOM to update
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait for fonts and rendering
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // File name
         const fileName = `${cvData.cvInfo.nom.replace(/\s+/g, '_')}_CV.pdf`;
