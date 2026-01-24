@@ -34,6 +34,10 @@
                     <span class="icon">💪</span>
                     <span data-i18n="nav_competences">Compétences</span>
                 </a>
+                <a href="#" class="nav-item" data-section="statistics">
+                    <span class="icon">📊</span>
+                    <span data-i18n="nav_statistics">Statistiques</span>
+                </a>
                 <div style="height: 1px; background: var(--border-color); margin: 10px 0;"></div>
                 <a href="#" class="nav-item" data-section="settings">
                     <span class="icon">⚙️</span>
@@ -223,6 +227,112 @@
                             <p data-i18n="empty_competences_desc">Organisez vos compétences par catégories</p>
                             <button class="btn btn-primary" onclick="document.getElementById('addCompetenceBtn').click()" data-i18n="btn_add_competence">
                                 Ajouter une compétence
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Statistics Section -->
+                <section id="section-statistics" class="content-section" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 data-i18n="section_statistics">Statistiques du CV</h3>
+                        </div>
+
+                        <div class="stats-intro" style="padding: 20px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 20px;">
+                            <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;" data-i18n="stats_intro">
+                                Utilisez l'IA pour générer automatiquement 3 statistiques impressionnantes basées sur votre CV. Ces statistiques seront affichées dans la section "À propos" de votre CV public.
+                            </p>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <button type="button" class="btn btn-primary" id="generateStatsBtn" data-i18n="btn_generate_stats">
+                                🤖 Proposer 3 statistiques
+                            </button>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="statsLoading" style="display: none; text-align: center; padding: 40px; color: var(--text-secondary);">
+                            <div class="spinner" style="width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                            <p data-i18n="stats_generating">Génération des statistiques en cours...</p>
+                        </div>
+
+                        <!-- Current Statistics Display -->
+                        <div id="statsDisplay" style="display: none;">
+                            <h4 style="margin-bottom: 20px;" data-i18n="stats_current">Statistiques actuelles</h4>
+
+                            <div class="stats-grid" style="display: grid; gap: 20px; margin-bottom: 30px;">
+                                <!-- Statistic 1 -->
+                                <div class="stat-card" style="padding: 20px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="flex: 1;">
+                                            <div style="margin-bottom: 10px;">
+                                                <span style="font-size: 0.85em; color: var(--text-secondary);">🇫🇷 Français</span>
+                                                <p id="stat1FrDisplay" style="margin: 5px 0; font-size: 0.95em; color: var(--text-primary);"></p>
+                                            </div>
+                                            <div>
+                                                <span style="font-size: 0.85em; color: var(--text-secondary);">🇬🇧 English</span>
+                                                <p id="stat1EnDisplay" style="margin: 5px 0; font-size: 0.95em; color: var(--text-primary);"></p>
+                                            </div>
+                                        </div>
+                                        <div id="stat1ValueDisplay" style="font-size: 2.5em; font-weight: bold; color: var(--primary-color); margin-left: 20px;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Statistic 2 -->
+                                <div class="stat-card" style="padding: 20px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="flex: 1;">
+                                            <div style="margin-bottom: 10px;">
+                                                <span style="font-size: 0.85em; color: var(--text-secondary);">🇫🇷 Français</span>
+                                                <p id="stat2FrDisplay" style="margin: 5px 0; font-size: 0.95em; color: var(--text-primary);"></p>
+                                            </div>
+                                            <div>
+                                                <span style="font-size: 0.85em; color: var(--text-secondary);">🇬🇧 English</span>
+                                                <p id="stat2EnDisplay" style="margin: 5px 0; font-size: 0.95em; color: var(--text-primary);"></p>
+                                            </div>
+                                        </div>
+                                        <div id="stat2ValueDisplay" style="font-size: 2.5em; font-weight: bold; color: var(--primary-color); margin-left: 20px;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Statistic 3 -->
+                                <div class="stat-card" style="padding: 20px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="flex: 1;">
+                                            <div style="margin-bottom: 10px;">
+                                                <span style="font-size: 0.85em; color: var(--text-secondary);">🇫🇷 Français</span>
+                                                <p id="stat3FrDisplay" style="margin: 5px 0; font-size: 0.95em; color: var(--text-primary);"></p>
+                                            </div>
+                                            <div>
+                                                <span style="font-size: 0.85em; color: var(--text-secondary);">🇬🇧 English</span>
+                                                <p id="stat3EnDisplay" style="margin: 5px 0; font-size: 0.95em; color: var(--text-primary);"></p>
+                                            </div>
+                                        </div>
+                                        <div id="stat3ValueDisplay" style="font-size: 2.5em; font-weight: bold; color: var(--primary-color); margin-left: 20px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="form-actions" style="display: flex; gap: 15px; justify-content: center;">
+                                <button type="button" class="btn btn-success" id="saveStatsBtn" data-i18n="btn_save_stats">
+                                    ✅ Sauvegarder ces statistiques
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="regenerateStatsBtn" data-i18n="btn_regenerate_stats">
+                                    🔄 Générer de nouvelles statistiques
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="statsEmpty" class="empty-state">
+                            <div class="icon">📊</div>
+                            <h3 data-i18n="empty_stats_title">Aucune statistique</h3>
+                            <p data-i18n="empty_stats_desc">Générez vos premières statistiques personnalisées avec l'IA</p>
+                            <button class="btn btn-primary" onclick="document.getElementById('generateStatsBtn').click()" data-i18n="btn_generate_stats">
+                                🤖 Proposer 3 statistiques
                             </button>
                         </div>
                     </div>

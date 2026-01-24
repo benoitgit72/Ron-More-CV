@@ -395,6 +395,9 @@ function renderAboutSection(cvInfo) {
         bioElement.textContent = getLocalizedText(cvInfo.bio, cvInfo.bio_en);
     }
 
+    // Rendre les statistiques
+    renderStatistics(cvInfo);
+
     // Mettre à jour le lien LinkedIn (si disponible)
     if (cvInfo.linkedin) {
         const linkedinLink = document.querySelector('.social-links a[href*="linkedin"]');
@@ -411,6 +414,96 @@ function renderAboutSection(cvInfo) {
             console.log(`✅ Formulaire Formspree configuré: ${cvInfo.formspree_id}`);
         }
     }
+}
+
+/**
+ * Rend les statistiques dans la section About
+ */
+function renderStatistics(cvInfo) {
+    const statsContainer = document.querySelector('.about-stats');
+    if (!statsContainer) {
+        console.warn('⚠️ Container .about-stats non trouvé');
+        return;
+    }
+
+    // Vérifier si des statistiques existent
+    const stat1Fr = cvInfo.stat1_fr;
+    const stat1En = cvInfo.stat1_en;
+    const stat2Fr = cvInfo.stat2_fr;
+    const stat2En = cvInfo.stat2_en;
+    const stat3Fr = cvInfo.stat3_fr;
+    const stat3En = cvInfo.stat3_en;
+
+    // Si aucune statistique n'existe, masquer le container
+    if (!stat1Fr && !stat1En && !stat2Fr && !stat2En && !stat3Fr && !stat3En) {
+        console.log('ℹ️ Aucune statistique à afficher');
+        statsContainer.style.display = 'none';
+        return;
+    }
+
+    console.log('📊 Rendu des statistiques:', { stat1Fr, stat1En, stat2Fr, stat2En, stat3Fr, stat3En });
+
+    // Fonction pour extraire la valeur numérique d'un label
+    const extractValue = (label) => {
+        if (!label) return 0;
+        const match = label.match(/\d+/);
+        return match ? parseInt(match[0], 10) : 0;
+    };
+
+    // Construire les statistiques
+    const statistics = [];
+
+    if (stat1Fr || stat1En) {
+        const label = getLocalizedText(stat1Fr, stat1En);
+        const value = extractValue(label);
+        statistics.push({ label, value });
+    }
+
+    if (stat2Fr || stat2En) {
+        const label = getLocalizedText(stat2Fr, stat2En);
+        const value = extractValue(label);
+        statistics.push({ label, value });
+    }
+
+    if (stat3Fr || stat3En) {
+        const label = getLocalizedText(stat3Fr, stat3En);
+        const value = extractValue(label);
+        statistics.push({ label, value });
+    }
+
+    // Si aucune statistique valide, masquer le container
+    if (statistics.length === 0) {
+        console.log('ℹ️ Aucune statistique valide à afficher');
+        statsContainer.style.display = 'none';
+        return;
+    }
+
+    // Vider le container
+    statsContainer.innerHTML = '';
+    statsContainer.style.display = 'flex';
+
+    // Créer les éléments de statistique
+    statistics.forEach((stat, index) => {
+        const statItem = document.createElement('div');
+        statItem.className = 'stat-item';
+        statItem.setAttribute('data-aos', 'fade-up');
+        if (index > 0) {
+            statItem.setAttribute('data-aos-delay', (index * 100).toString());
+        }
+
+        statItem.innerHTML = `
+            <span class="stat-number" data-target="${stat.value}">0</span>
+            <span class="stat-label">${stat.label}</span>
+        `;
+
+        statsContainer.appendChild(statItem);
+    });
+
+    // Déclencher l'animation de comptage après un court délai
+    // Note: L'animation est gérée par animateCounters() dans script.js
+    // qui s'exécute automatiquement quand la section devient visible
+
+    console.log('✅ Statistiques rendues avec succès');
 }
 
 /**

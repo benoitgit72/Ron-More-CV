@@ -7,7 +7,9 @@
     "type": "git",
     "url": "https://github.com/benoitgit72/SyncCV.git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
   "devDependencies": {},
   "scripts": {
     "dev": "vercel dev",

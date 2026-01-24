@@ -130,6 +130,7 @@ async function loadSection(sectionName) {
         'experiences': 'section_experiences',
         'formations': 'section_formations',
         'competences': 'section_competences',
+        'statistics': 'section_statistics',
         'settings': 'section_settings'
     };
     const sectionTitle = document.getElementById('sectionTitle');
@@ -153,6 +154,9 @@ async function loadSection(sectionName) {
                 break;
             case 'competences':
                 await loadCompetences();
+                break;
+            case 'statistics':
+                await loadStatistics();
                 break;
             case 'settings':
                 await loadSettings();
@@ -2384,5 +2388,271 @@ async function removeCompetenceFromModal(id) {
             console.error('Erreur:', error);
             showToast('Erreur lors de la suppression', 'error');
         }
+    }
+}
+
+// ============================================
+// STATISTICS MANAGEMENT
+// ============================================
+
+// Variable globale pour stocker les statistiques générées temporairement
+let tempGeneratedStats = null;
+
+/**
+ * Charger les statistiques actuelles
+ */
+async function loadStatistics() {
+    console.log('📊 Chargement des statistiques...');
+
+    const statsDisplay = document.getElementById('statsDisplay');
+    const statsEmpty = document.getElementById('statsEmpty');
+    const statsLoading = document.getElementById('statsLoading');
+    const generateBtn = document.getElementById('generateStatsBtn');
+    const saveBtn = document.getElementById('saveStatsBtn');
+    const regenerateBtn = document.getElementById('regenerateStatsBtn');
+
+    // Setup event listeners
+    if (generateBtn) {
+        generateBtn.onclick = generateStatistics;
+    }
+    if (regenerateBtn) {
+        regenerateBtn.onclick = generateStatistics;
+    }
+    if (saveBtn) {
+        saveBtn.onclick = saveStatistics;
+    }
+
+    try {
+        // Récupérer les statistiques depuis la base de données
+        const cvInfo = await getCVInfo(currentUser.id);
+
+        // Vérifier si des statistiques existent
+        const hasStat1 = cvInfo?.stat1_fr || cvInfo?.stat1_en;
+        const hasStat2 = cvInfo?.stat2_fr || cvInfo?.stat2_en;
+        const hasStat3 = cvInfo?.stat3_fr || cvInfo?.stat3_en;
+
+        if (hasStat1 || hasStat2 || hasStat3) {
+            // Afficher les statistiques existantes
+            displayStatistics({
+                stat1_fr: cvInfo.stat1_fr || '',
+                stat1_en: cvInfo.stat1_en || '',
+                stat1_value: 0, // Les valeurs ne sont pas stockées séparément
+                stat2_fr: cvInfo.stat2_fr || '',
+                stat2_en: cvInfo.stat2_en || '',
+                stat2_value: 0,
+                stat3_fr: cvInfo.stat3_fr || '',
+                stat3_en: cvInfo.stat3_en || '',
+                stat3_value: 0
+            });
+            statsDisplay.style.display = 'block';
+            statsEmpty.style.display = 'none';
+            generateBtn.style.display = 'inline-block';
+        } else {
+            // Afficher l'état vide
+            statsDisplay.style.display = 'none';
+            statsEmpty.style.display = 'flex';
+            generateBtn.style.display = 'inline-block';
+        }
+
+    } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+        showToast('Erreur lors du chargement des statistiques', 'error');
+    }
+}
+
+/**
+ * Générer de nouvelles statistiques via l'API Claude
+ */
+async function generateStatistics() {
+    console.log('🤖 Génération de nouvelles statistiques...');
+
+    const statsDisplay = document.getElementById('statsDisplay');
+    const statsEmpty = document.getElementById('statsEmpty');
+    const statsLoading = document.getElementById('statsLoading');
+    const generateBtn = document.getElementById('generateStatsBtn');
+
+    // Afficher le loader
+    statsDisplay.style.display = 'none';
+    statsEmpty.style.display = 'none';
+    statsLoading.style.display = 'block';
+    generateBtn.disabled = true;
+
+    try {
+        // Appeler l'API pour générer les statistiques
+        const response = await fetch('/api/generate-statistics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUser.id
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erreur lors de la génération des statistiques');
+        }
+
+        const data = await response.json();
+        console.log('✅ Statistiques générées:', data);
+
+        // Stocker les statistiques temporairement
+        tempGeneratedStats = data.statistics;
+
+        // Afficher les statistiques
+        displayStatistics(data.statistics);
+
+        // Masquer le loader et afficher les statistiques
+        statsLoading.style.display = 'none';
+        statsDisplay.style.display = 'block';
+        generateBtn.disabled = false;
+
+        showToast('Statistiques générées avec succès!', 'success');
+
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        showToast(error.message, 'error');
+
+        // Masquer le loader et réafficher l'état précédent
+        statsLoading.style.display = 'none';
+        statsEmpty.style.display = 'flex';
+        generateBtn.disabled = false;
+    }
+}
+
+/**
+ * Afficher les statistiques dans l'interface
+ */
+function displayStatistics(stats) {
+    console.log('📊 Affichage des statistiques:', stats);
+
+    // Extraire les valeurs depuis les labels si elles contiennent des nombres
+    const extractValue = (label) => {
+        if (typeof label === 'string') {
+            // Chercher un nombre dans le label (ex: "15 ans d'expérience" -> 15)
+            const match = label.match(/\d+/);
+            return match ? match[0] : '?';
+        }
+        return '?';
+    };
+
+    // Afficher stat1
+    const stat1FrLabel = stats.stat1_fr || '';
+    const stat1EnLabel = stats.stat1_en || '';
+    const stat1Value = stats.stat1_value !== undefined && stats.stat1_value !== 0
+        ? stats.stat1_value
+        : extractValue(stat1FrLabel);
+
+    document.getElementById('stat1FrDisplay').textContent = stat1FrLabel;
+    document.getElementById('stat1EnDisplay').textContent = stat1EnLabel;
+    document.getElementById('stat1ValueDisplay').textContent = stat1Value;
+
+    // Afficher stat2
+    const stat2FrLabel = stats.stat2_fr || '';
+    const stat2EnLabel = stats.stat2_en || '';
+    const stat2Value = stats.stat2_value !== undefined && stats.stat2_value !== 0
+        ? stats.stat2_value
+        : extractValue(stat2FrLabel);
+
+    document.getElementById('stat2FrDisplay').textContent = stat2FrLabel;
+    document.getElementById('stat2EnDisplay').textContent = stat2EnLabel;
+    document.getElementById('stat2ValueDisplay').textContent = stat2Value;
+
+    // Afficher stat3
+    const stat3FrLabel = stats.stat3_fr || '';
+    const stat3EnLabel = stats.stat3_en || '';
+    const stat3Value = stats.stat3_value !== undefined && stats.stat3_value !== 0
+        ? stats.stat3_value
+        : extractValue(stat3FrLabel);
+
+    document.getElementById('stat3FrDisplay').textContent = stat3FrLabel;
+    document.getElementById('stat3EnDisplay').textContent = stat3EnLabel;
+    document.getElementById('stat3ValueDisplay').textContent = stat3Value;
+}
+
+/**
+ * Sauvegarder les statistiques dans la base de données
+ */
+async function saveStatistics() {
+    console.log('💾 Sauvegarde des statistiques...');
+
+    if (!tempGeneratedStats) {
+        showToast('Aucune statistique à sauvegarder', 'error');
+        return;
+    }
+
+    const saveBtn = document.getElementById('saveStatsBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '⏳ Sauvegarde...';
+
+    try {
+        const supabase = getSupabaseClient();
+
+        // Construire les labels avec les valeurs incluses
+        // Format: "15+ années d'expérience" au lieu de juste "Années d'expérience"
+        const stat1FrWithValue = tempGeneratedStats.stat1_value
+            ? `${tempGeneratedStats.stat1_value}+ ${tempGeneratedStats.stat1_fr.toLowerCase()}`
+            : tempGeneratedStats.stat1_fr;
+
+        const stat1EnWithValue = tempGeneratedStats.stat1_value
+            ? `${tempGeneratedStats.stat1_value}+ ${tempGeneratedStats.stat1_en.toLowerCase()}`
+            : tempGeneratedStats.stat1_en;
+
+        const stat2FrWithValue = tempGeneratedStats.stat2_value
+            ? `${tempGeneratedStats.stat2_value}+ ${tempGeneratedStats.stat2_fr.toLowerCase()}`
+            : tempGeneratedStats.stat2_fr;
+
+        const stat2EnWithValue = tempGeneratedStats.stat2_value
+            ? `${tempGeneratedStats.stat2_value}+ ${tempGeneratedStats.stat2_en.toLowerCase()}`
+            : tempGeneratedStats.stat2_en;
+
+        const stat3FrWithValue = tempGeneratedStats.stat3_value
+            ? `${tempGeneratedStats.stat3_value}+ ${tempGeneratedStats.stat3_fr.toLowerCase()}`
+            : tempGeneratedStats.stat3_fr;
+
+        const stat3EnWithValue = tempGeneratedStats.stat3_value
+            ? `${tempGeneratedStats.stat3_value}+ ${tempGeneratedStats.stat3_en.toLowerCase()}`
+            : tempGeneratedStats.stat3_en;
+
+        // Mettre à jour les statistiques dans cv_info
+        const { error } = await supabase
+            .from('cv_info')
+            .update({
+                stat1_fr: stat1FrWithValue,
+                stat1_en: stat1EnWithValue,
+                stat2_fr: stat2FrWithValue,
+                stat2_en: stat2EnWithValue,
+                stat3_fr: stat3FrWithValue,
+                stat3_en: stat3EnWithValue
+            })
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        console.log('✅ Statistiques sauvegardées:', {
+            stat1_fr: stat1FrWithValue,
+            stat1_en: stat1EnWithValue,
+            stat2_fr: stat2FrWithValue,
+            stat2_en: stat2EnWithValue,
+            stat3_fr: stat3FrWithValue,
+            stat3_en: stat3EnWithValue
+        });
+
+        showToast('Statistiques sauvegardées avec succès!', 'success');
+
+        // Réinitialiser les statistiques temporaires
+        tempGeneratedStats = null;
+
+        // Recharger les statistiques
+        await loadStatistics();
+
+    } catch (error) {
+        console.error('❌ Erreur:', error);
+        showToast('Erreur lors de la sauvegarde: ' + error.message, 'error');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
     }
 }

@@ -143,6 +143,18 @@ const adminTranslations = {
         comp_level_intermediate_en: "Intermediate",
         comp_level_advanced_en: "Advanced",
         comp_level_expert_en: "Expert",
+
+        // Statistics
+        nav_statistics: "Statistiques",
+        section_statistics: "Statistiques du CV",
+        stats_intro: "Utilisez l'IA pour générer automatiquement 3 statistiques impressionnantes basées sur votre CV. Ces statistiques seront affichées dans la section \"À propos\" de votre CV public.",
+        btn_generate_stats: "🤖 Proposer 3 statistiques",
+        btn_save_stats: "✅ Sauvegarder ces statistiques",
+        btn_regenerate_stats: "🔄 Générer de nouvelles statistiques",
+        stats_generating: "Génération des statistiques en cours...",
+        stats_current: "Statistiques actuelles",
+        empty_stats_title: "Aucune statistique",
+        empty_stats_desc: "Générez vos premières statistiques personnalisées avec l'IA",
     },
 
     en: {
@@ -285,6 +297,18 @@ const adminTranslations = {
         comp_level_intermediate_en: "Intermediate",
         comp_level_advanced_en: "Advanced",
         comp_level_expert_en: "Expert",
+
+        // Statistics
+        nav_statistics: "Statistics",
+        section_statistics: "CV Statistics",
+        stats_intro: "Use AI to automatically generate 3 impressive statistics based on your CV. These statistics will be displayed in the \"About\" section of your public CV.",
+        btn_generate_stats: "🤖 Suggest 3 statistics",
+        btn_save_stats: "✅ Save these statistics",
+        btn_regenerate_stats: "🔄 Generate new statistics",
+        stats_generating: "Generating statistics...",
+        stats_current: "Current statistics",
+        empty_stats_title: "No statistics",
+        empty_stats_desc: "Generate your first personalized statistics with AI",
     }
 };
 
