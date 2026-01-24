@@ -44,6 +44,15 @@ body[data-theme="forest-green"] {
     --accent-gradient: linear-gradient(135deg, #10B981 0%, #047857 100%);
 }
 
+/* ===========================
+   Theme: Sunset Orange
+   =========================== */
+body[data-theme="sunset-orange"] {
+    --primary-color: #F97316;
+    --secondary-color: #FB923C;
+    --accent-gradient: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+}
+
 * {
     margin: 0;
     padding: 0;

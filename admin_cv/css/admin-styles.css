@@ -1158,6 +1158,10 @@ body {
     background: linear-gradient(135deg, #10B981 0%, #059669 100%);
 }
 
+.theme-sunset-orange .theme-preview-gradient {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+}
+
 .theme-info {
     text-align: center;
 }
@@ -1275,6 +1279,47 @@ body[data-theme="forest-green"] .login-page {
 
 body[data-theme="forest-green"] .exp-date-badge {
     background: linear-gradient(135deg, #10B981, #059669);
+}
+
+/* ============================================
+   Theme Color Variables - Sunset Orange
+   ============================================ */
+
+body[data-theme="sunset-orange"] {
+    --primary-color: #F97316;
+    --primary-dark: #EA580C;
+    --primary-light: #FB923C;
+    --secondary-color: #DC2626;
+}
+
+body[data-theme="sunset-orange"] .btn-primary {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+}
+
+body[data-theme="sunset-orange"] .nav-item.active {
+    background: rgba(249, 115, 22, 0.1);
+    color: #F97316;
+    border-left: 3px solid #F97316;
+}
+
+body[data-theme="sunset-orange"] .user-avatar {
+    background: linear-gradient(135deg, #F97316, #EA580C);
+}
+
+body[data-theme="sunset-orange"] .nav-brand,
+body[data-theme="sunset-orange"] .sidebar-header h1 {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+body[data-theme="sunset-orange"] .login-page {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+}
+
+body[data-theme="sunset-orange"] .exp-date-badge {
+    background: linear-gradient(135deg, #F97316, #EA580C);
 }
 
 /* Responsive theme selector */
