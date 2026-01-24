@@ -104,73 +104,85 @@ async function generatePDF() {
         console.log('HTML généré, longueur:', pdfHTML.length);
         console.log('Aperçu HTML:', pdfHTML.substring(0, 500));
 
-        // Create a temporary container - MUST BE VISIBLE for html2canvas
+        // Create a temporary container - positioned absolutely off-screen but still rendered
         const container = document.createElement('div');
         container.id = 'pdf-temp-container';
         container.innerHTML = pdfHTML;
 
-        // Style the container - MUST be above loading overlay (z-index 10001 > 10000)
+        // Style: absolute positioning, off-screen but rendered, no height limits
         container.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 210mm;
-            max-height: 90vh;
-            overflow: auto;
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 794px;
             background: white;
-            z-index: 10001;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            border: 2px solid #1e40af;
+            padding: 40px;
         `;
 
         document.body.appendChild(container);
-        console.log('Conteneur ajouté au DOM et visible');
+        console.log('Conteneur ajouté au DOM');
 
-        // Force browser reflow to ensure content is rendered
+        // Force browser reflow
         container.offsetHeight;
 
-        // Wait for browser to paint the content using requestAnimationFrame
-        await new Promise(resolve => requestAnimationFrame(() => {
-            requestAnimationFrame(resolve);
-        }));
+        // Wait for rendering
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Additional wait for fonts and complete rendering
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        console.log('Capture du contenu avec html2canvas...');
 
-        console.log('Attente terminée, le contenu devrait être complètement rendu');
+        // Use html2canvas directly to capture the content
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: container.scrollWidth,
+            height: container.scrollHeight
+        });
 
-        // File name
+        console.log('Canvas créé, dimensions:', canvas.width, 'x', canvas.height);
+
+        // Convert canvas to image
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        // Calculate PDF dimensions (A4 in mm)
+        const pdfWidth = 210;
+        const pdfHeight = 297;
+
+        // Calculate image dimensions to fit in PDF
+        const imgWidth = pdfWidth - 20; // 10mm margin on each side
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        console.log('Création du PDF avec jsPDF...');
+
+        // Create PDF using jsPDF directly
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        let heightLeft = imgHeight;
+        let position = 10; // Top margin
+
+        // Add first page
+        pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+        heightLeft -= (pdfHeight - 20); // Subtract page height minus margins
+
+        // Add additional pages if content exceeds one page
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight + 10;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pdfHeight - 20);
+        }
+
+        // Save the PDF
         const fileName = `${cvData.cvInfo.nom.replace(/\s+/g, '_')}_CV.pdf`;
+        pdf.save(fileName);
 
-        // PDF options
-        const opt = {
-            margin: [10, 10, 10, 10],
-            filename: fileName,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                letterRendering: true,
-                logging: true,
-                backgroundColor: '#ffffff',
-                windowWidth: container.scrollWidth,
-                windowHeight: container.scrollHeight
-            },
-            jsPDF: {
-                unit: 'mm',
-                format: 'a4',
-                orientation: 'portrait'
-            }
-        };
-
-        console.log('Génération du PDF...');
-
-        // Generate PDF with proper sequencing
-        await html2pdf().from(container).set(opt).save();
-
-        console.log('PDF généré avec succès');
+        console.log('PDF généré et téléchargé avec succès');
 
         // Clean up
         document.body.removeChild(container);
