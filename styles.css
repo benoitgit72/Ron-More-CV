@@ -17,6 +17,33 @@
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+/* ===========================
+   Theme: Purple Gradient (Default)
+   =========================== */
+body[data-theme="purple-gradient"] {
+    --primary-color: #4a90e2;
+    --secondary-color: #2ecc71;
+    --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ===========================
+   Theme: Ocean Blue
+   =========================== */
+body[data-theme="ocean-blue"] {
+    --primary-color: #0EA5E9;
+    --secondary-color: #06B6D4;
+    --accent-gradient: linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%);
+}
+
+/* ===========================
+   Theme: Forest Green
+   =========================== */
+body[data-theme="forest-green"] {
+    --primary-color: #10B981;
+    --secondary-color: #34D399;
+    --accent-gradient: linear-gradient(135deg, #10B981 0%, #047857 100%);
+}
+
 * {
     margin: 0;
     padding: 0;

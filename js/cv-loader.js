@@ -58,7 +58,7 @@ async function loadCVData(slug = CV_SLUG) {
         // 1. Récupérer le profil par slug
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('id, slug, template_id')
+            .select('id, slug, template_id, theme')
             .eq('slug', slug)
             .single();
 
@@ -66,7 +66,7 @@ async function loadCVData(slug = CV_SLUG) {
         if (!profile) throw new Error(`Profil non trouvé pour le slug: ${slug}`);
 
         const userId = profile.id;
-        console.log(`✅ Profil trouvé (ID: ${userId})`);
+        console.log(`✅ Profil trouvé (ID: ${userId}, theme: ${profile.theme || 'purple-gradient'})`);
 
         // 2. Charger les informations personnelles
         const { data: cvInfo, error: cvInfoError } = await supabase
@@ -221,12 +221,26 @@ function getNiveauPercentage(niveau) {
 }
 
 /**
+ * Applique le thème de couleur au CV public
+ */
+function applyThemeToPublicCV(theme) {
+    const themeName = theme || 'purple-gradient';
+    document.body.setAttribute('data-theme', themeName);
+    console.log(`🎨 Thème appliqué au CV public: ${themeName}`);
+}
+
+/**
  * Rend le CV avec les données chargées
  */
 async function renderCV() {
     try {
         // Charger les données
         const data = await loadCVData();
+
+        // Appliquer le thème de couleur choisi par l'utilisateur
+        if (data && data.profile) {
+            applyThemeToPublicCV(data.profile.theme);
+        }
 
         // NOUVEAU: Tracker la visite (non-bloquant)
         if (data && data.profile && data.profile.id) {
