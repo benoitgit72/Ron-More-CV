@@ -128,8 +128,18 @@ async function generatePDF() {
         document.body.appendChild(container);
         console.log('Conteneur ajouté au DOM et visible');
 
-        // Wait for fonts and rendering
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Force browser reflow to ensure content is rendered
+        container.offsetHeight;
+
+        // Wait for browser to paint the content using requestAnimationFrame
+        await new Promise(resolve => requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        }));
+
+        // Additional wait for fonts and complete rendering
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        console.log('Attente terminée, le contenu devrait être complètement rendu');
 
         // File name
         const fileName = `${cvData.cvInfo.nom.replace(/\s+/g, '_')}_CV.pdf`;
@@ -144,7 +154,9 @@ async function generatePDF() {
                 useCORS: true,
                 letterRendering: true,
                 logging: true,
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                windowWidth: container.scrollWidth,
+                windowHeight: container.scrollHeight
             },
             jsPDF: {
                 unit: 'mm',
@@ -155,8 +167,8 @@ async function generatePDF() {
 
         console.log('Génération du PDF...');
 
-        // Generate PDF
-        await html2pdf().set(opt).from(container).save();
+        // Generate PDF with proper sequencing
+        await html2pdf().from(container).set(opt).save();
 
         console.log('PDF généré avec succès');
 
