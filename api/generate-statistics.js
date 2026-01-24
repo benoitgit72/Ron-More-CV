@@ -114,9 +114,9 @@ async function fetchCVData(userId) {
         // Récupérer les compétences
         const { data: competences, error: competencesError } = await supabase
             .from('competences')
-            .select('nom, nom_en, categorie, categorie_en')
+            .select('competence, competence_en, categorie, categorie_en, niveau, niveau_en')
             .eq('user_id', userId)
-            .order('ordre', { ascending: true });
+            .order('categorie', { ascending: true });
 
         if (competencesError) throw competencesError;
 
@@ -177,7 +177,10 @@ function buildCVContext(cvData) {
             if (!competencesParCategorie[cat]) {
                 competencesParCategorie[cat] = [];
             }
-            competencesParCategorie[cat].push(comp.nom);
+            // Utiliser competence (pas nom) et ajouter le niveau si disponible
+            const skillLabel = comp.competence || comp.competence_en || 'Non spécifié';
+            const skillWithLevel = comp.niveau ? `${skillLabel} (${comp.niveau})` : skillLabel;
+            competencesParCategorie[cat].push(skillWithLevel);
         });
 
         context += `COMPÉTENCES (${competences.length} compétences):\n`;
