@@ -500,8 +500,13 @@ function renderStatistics(cvInfo) {
     });
 
     // Déclencher l'animation de comptage après un court délai
-    // Note: L'animation est gérée par animateCounters() dans script.js
-    // qui s'exécute automatiquement quand la section devient visible
+    setTimeout(() => {
+        if (typeof window.triggerStatsAnimation === 'function') {
+            window.triggerStatsAnimation();
+        } else {
+            console.warn('⚠️ triggerStatsAnimation non disponible');
+        }
+    }, 200);
 
     console.log('✅ Statistiques rendues avec succès');
 }

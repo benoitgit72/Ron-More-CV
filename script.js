@@ -143,6 +143,14 @@ setTimeout(() => {
     }
 }, 3000);
 
+// Fonction publique pour forcer l'animation (appelée après changement de langue ou rafraîchissement)
+window.triggerStatsAnimation = () => {
+    console.log('🔄 Déclenchement manuel de l\'animation des statistiques');
+    hasAnimated = false; // Réinitialiser le flag
+    animateCounters();
+    hasAnimated = true;
+};
+
 // ===========================
 // Animate Skills Progress Bars
 // ===========================
