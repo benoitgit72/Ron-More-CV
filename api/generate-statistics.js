@@ -87,7 +87,7 @@ async function fetchCVData(userId) {
         // Récupérer les informations personnelles
         const { data: cvInfo, error: cvInfoError } = await supabase
             .from('cv_info')
-            .select('nom, prenom, titre, titre_en, bio, bio_en')
+            .select('nom, titre, titre_en, bio, bio_en')
             .eq('user_id', userId)
             .single();
 
@@ -136,7 +136,7 @@ async function fetchCVData(userId) {
 function buildCVContext(cvData) {
     const { cvInfo, experiences, formations, competences } = cvData;
 
-    let context = `NOM COMPLET: ${cvInfo.prenom || ''} ${cvInfo.nom || ''}\n`;
+    let context = `NOM COMPLET: ${cvInfo.nom || ''}\n`;
     context += `TITRE: ${cvInfo.titre || ''}\n`;
     if (cvInfo.bio) {
         context += `BIO: ${cvInfo.bio.substring(0, 200)}${cvInfo.bio.length > 200 ? '...' : ''}\n`;
