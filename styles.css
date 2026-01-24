@@ -1547,7 +1547,7 @@ body {
     width: 100%;
     border: none;
     background: white;
-    color: var(--text-color);
+    color: #1a1a1a;
     cursor: pointer;
     font-size: 14px;
     font-family: inherit;
