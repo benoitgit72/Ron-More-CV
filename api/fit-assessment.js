@@ -361,7 +361,13 @@ RÈGLES:
 - Sois constructif mais honnête
 - Réponds en ${language === 'fr' ? 'français' : 'anglais'}
 
-FORMAT JSON STRICT (sans balises markdown):
+IMPORTANT - FORMAT DE SORTIE:
+- Réponds UNIQUEMENT avec du JSON valide
+- NE PAS utiliser de balises markdown (pas de \`\`\`json ou \`\`\`)
+- NE PAS ajouter de texte avant ou après le JSON
+- Commence directement par { et termine par }
+
+FORMAT JSON ATTENDU:
 {
   "overallScore": 75,
   "strongFit": ["point 1", "point 2", "point 3"],
@@ -412,14 +418,20 @@ FORMAT JSON STRICT (sans balises markdown):
 
         // Clean JSON (remove markdown if present)
         let cleanedContent = content.trim();
-        if (cleanedContent.startsWith('```json')) {
-            cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-        } else if (cleanedContent.startsWith('```')) {
-            cleanedContent = cleanedContent.replace(/```\n?/g, '');
+
+        // Try multiple cleaning strategies
+        // Strategy 1: Remove markdown code blocks
+        cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+
+        // Strategy 2: Extract JSON from text (find first { to last })
+        const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            cleanedContent = jsonMatch[0];
         }
+
         cleanedContent = cleanedContent.trim();
 
-        console.log('🧹 Cleaned content:', cleanedContent);
+        console.log('🧹 Cleaned content:', cleanedContent.substring(0, 200) + '...');
 
         // Parse JSON
         let analysis;
@@ -427,9 +439,11 @@ FORMAT JSON STRICT (sans balises markdown):
             analysis = JSON.parse(cleanedContent);
         } catch (parseError) {
             console.error('❌ JSON parse error:', parseError);
+            console.error('Failed content:', cleanedContent);
             return res.status(500).json({
                 error: 'Failed to parse Claude response',
-                rawResponse: cleanedContent
+                details: parseError.message,
+                contentPreview: cleanedContent.substring(0, 500)
             });
         }
 
