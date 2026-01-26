@@ -116,6 +116,27 @@ class LanguageManager {
             welcomeMessage.textContent = t.chatbot_welcome;
         }
 
+        // Update Fit Assessment elements
+        this.updateTextContent('#fitAssessmentBtn span', t.fit_assessment_menu);
+        this.updateTextContent('#fitAssessmentModal .fit-modal-header h2', t.fit_assessment_title);
+        this.updateTextContent('label[for="jobDescription"]', t.fit_job_label);
+        this.updateTextContent('#analyzeFitBtn span', t.fit_analyze_btn);
+        this.updateTextContent('.fit-char-count span[data-i18n="fit_characters"]', t.fit_characters);
+        this.updateTextContent('.fit-score-card h3', t.fit_overall_score);
+
+        // Update Fit Assessment results sections
+        this.updateTextContent('.fit-strong h3', '✅ ' + t.fit_strong_title);
+        this.updateTextContent('.fit-development h3', '⚠️ ' + t.fit_development_title);
+        this.updateTextContent('.fit-recommendations h3', '💡 ' + t.fit_recommendations_title);
+        this.updateTextContent('#copyResultsBtn', t.fit_copy_btn);
+        this.updateTextContent('#newAnalysisBtn', t.fit_new_analysis_btn);
+
+        // Update placeholder
+        const jobDescTextarea = document.getElementById('jobDescription');
+        if (jobDescTextarea) {
+            jobDescTextarea.placeholder = t.fit_job_placeholder;
+        }
+
         // Émettre un événement personnalisé pour informer le chatbot du changement de langue
         window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
     }
