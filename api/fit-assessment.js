@@ -4,19 +4,13 @@
 // ============================================
 
 import { createClient } from '@supabase/supabase-js';
+import { getRateLimitsFromDB } from './_utils/get-rate-limits.js';
 
 // Simple in-memory rate limiting
 const rateLimitStore = new Map();
 
-// Rate limits per IP address
-const RATE_LIMITS = {
-    minute: { limit: 2, window: 60 * 1000 }, // 2 analyses per minute
-    hour: { limit: 5, window: 60 * 60 * 1000 }, // 5 analyses per hour
-    day: { limit: 5, window: 24 * 60 * 60 * 1000 }, // 5 analyses per day
-};
-
-// Rate limit check function
-function checkRateLimit(ip) {
+// Rate limit check function with dynamic limits
+function checkRateLimit(ip, rateLimits) {
     const now = Date.now();
 
     if (!rateLimitStore.has(ip)) {
@@ -29,7 +23,10 @@ function checkRateLimit(ip) {
 
     const userData = rateLimitStore.get(ip);
 
-    for (const [period, config] of Object.entries(RATE_LIMITS)) {
+    for (const [period, config] of Object.entries(rateLimits)) {
+        // Skip if limit is null (unlimited)
+        if (config.limit === null) continue;
+
         userData[period] = userData[period].filter(timestamp => now - timestamp < config.window);
 
         if (userData[period].length >= config.limit) {
@@ -55,9 +52,9 @@ function checkRateLimit(ip) {
     return {
         allowed: true,
         remaining: {
-            minute: RATE_LIMITS.minute.limit - userData.minute.length,
-            hour: RATE_LIMITS.hour.limit - userData.hour.length,
-            day: RATE_LIMITS.day.limit - userData.day.length
+            minute: rateLimits.minute.limit !== null ? rateLimits.minute.limit - userData.minute.length : 999,
+            hour: rateLimits.hour.limit !== null ? rateLimits.hour.limit - userData.hour.length : 999,
+            day: rateLimits.day.limit !== null ? rateLimits.day.limit - userData.day.length : 999
         }
     };
 }
@@ -65,8 +62,9 @@ function checkRateLimit(ip) {
 // Cleanup old entries periodically
 setInterval(() => {
     const now = Date.now();
+    const dayWindow = 24 * 60 * 60 * 1000; // 24 hours
     for (const [ip, data] of rateLimitStore.entries()) {
-        const hasRecentActivity = data.day.some(timestamp => now - timestamp < RATE_LIMITS.day.window);
+        const hasRecentActivity = data.day.some(timestamp => now - timestamp < dayWindow);
         if (!hasRecentActivity) {
             rateLimitStore.delete(ip);
         }
@@ -331,8 +329,11 @@ export default async function handler(req, res) {
             });
         }
 
-        // Check rate limit
-        const rateLimitResult = checkRateLimit(ip);
+        // Fetch dynamic rate limits from database
+        const rateLimits = await getRateLimitsFromDB('fit_assessment');
+
+        // Check rate limit with dynamic limits
+        const rateLimitResult = checkRateLimit(ip, rateLimits);
 
         if (!rateLimitResult.allowed) {
             const { hoursRemaining, period, total } = rateLimitResult;

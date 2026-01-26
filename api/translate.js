@@ -1,28 +1,28 @@
 // Serverless function pour traduire du texte via Claude Haiku
 // Utilisée pour traduire les expériences professionnelles FR <-> EN
 
+import { getRateLimitsFromDB } from './_utils/get-rate-limits.js';
+
 // Simple in-memory rate limiting
 const rateLimitStore = new Map();
 
-// Limites de taux pour la traduction
-const RATE_LIMITS = {
-    minute: { limit: 10, window: 60 * 1000 }, // 10 traductions par minute
-    hour: { limit: 50, window: 60 * 60 * 1000 }, // 50 traductions par heure
-};
-
-function checkRateLimit(ip) {
+function checkRateLimit(ip, rateLimits) {
     const now = Date.now();
 
     if (!rateLimitStore.has(ip)) {
         rateLimitStore.set(ip, {
             minute: [],
-            hour: []
+            hour: [],
+            day: []
         });
     }
 
     const ipData = rateLimitStore.get(ip);
 
-    for (const [period, config] of Object.entries(RATE_LIMITS)) {
+    for (const [period, config] of Object.entries(rateLimits)) {
+        // Skip if limit is null (unlimited)
+        if (config.limit === null) continue;
+
         ipData[period] = ipData[period].filter(timestamp => now - timestamp < config.window);
 
         if (ipData[period].length >= config.limit) {
@@ -41,6 +41,7 @@ function checkRateLimit(ip) {
 
     ipData.minute.push(now);
     ipData.hour.push(now);
+    ipData.day.push(now);
 
     return { allowed: true };
 }
@@ -59,8 +60,11 @@ export default async function handler(req, res) {
                    req.socket?.remoteAddress ||
                    'unknown';
 
-        // Vérifier le rate limit
-        const rateLimitResult = checkRateLimit(ip);
+        // Récupérer les limites dynamiques depuis la base de données
+        const rateLimits = await getRateLimitsFromDB('translate');
+
+        // Vérifier le rate limit avec les limites dynamiques
+        const rateLimitResult = checkRateLimit(ip, rateLimits);
 
         if (!rateLimitResult.allowed) {
             const { waitTime, period } = rateLimitResult;

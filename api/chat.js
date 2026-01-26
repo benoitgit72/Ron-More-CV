@@ -1,18 +1,13 @@
 // Serverless function pour appeler l'API Claude de façon sécurisée
 // La clé API est stockée dans les variables d'environnement Vercel
 
+import { getRateLimitsFromDB } from './_utils/get-rate-limits.js';
+
 // Simple in-memory rate limiting (survit pendant la durée de vie de la fonction serverless)
 const rateLimitStore = new Map();
 
-// Limites de taux
-const RATE_LIMITS = {
-    minute: { limit: 4, window: 60 * 1000 }, // 4 requêtes par minute
-    hour: { limit: 10, window: 60 * 60 * 1000 }, // 10 requêtes par heure
-    day: { limit: 15, window: 24 * 60 * 60 * 1000 }, // 15 requêtes par jour
-};
-
-// Fonction pour vérifier et mettre à jour le rate limit
-function checkRateLimit(ip) {
+// Fonction pour vérifier et mettre à jour le rate limit avec limites dynamiques
+function checkRateLimit(ip, rateLimits) {
     const now = Date.now();
 
     // Initialiser le store pour cette IP si nécessaire
@@ -27,7 +22,10 @@ function checkRateLimit(ip) {
     const ipData = rateLimitStore.get(ip);
 
     // Nettoyer les anciennes entrées et vérifier chaque limite
-    for (const [period, config] of Object.entries(RATE_LIMITS)) {
+    for (const [period, config] of Object.entries(rateLimits)) {
+        // Skip if limit is null (unlimited)
+        if (config.limit === null) continue;
+
         // Filtrer les timestamps qui sont encore dans la fenêtre
         ipData[period] = ipData[period].filter(timestamp => now - timestamp < config.window);
 
@@ -57,9 +55,10 @@ function checkRateLimit(ip) {
 // Nettoyer périodiquement le store pour éviter les fuites mémoire
 setInterval(() => {
     const now = Date.now();
+    const dayWindow = 24 * 60 * 60 * 1000; // 24 heures
     for (const [ip, data] of rateLimitStore.entries()) {
         // Supprimer les IPs qui n'ont pas fait de requête depuis 24h
-        const hasRecentActivity = data.day.some(timestamp => now - timestamp < RATE_LIMITS.day.window);
+        const hasRecentActivity = data.day.some(timestamp => now - timestamp < dayWindow);
         if (!hasRecentActivity) {
             rateLimitStore.delete(ip);
         }
@@ -80,8 +79,11 @@ export default async function handler(req, res) {
                    req.socket?.remoteAddress ||
                    'unknown';
 
-        // Vérifier le rate limit
-        const rateLimitResult = checkRateLimit(ip);
+        // Récupérer les limites dynamiques depuis la base de données
+        const rateLimits = await getRateLimitsFromDB('chatbot');
+
+        // Vérifier le rate limit avec les limites dynamiques
+        const rateLimitResult = checkRateLimit(ip, rateLimits);
 
         if (!rateLimitResult.allowed) {
             const { waitTime, period } = rateLimitResult;

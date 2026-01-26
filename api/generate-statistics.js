@@ -2,19 +2,13 @@
 // Analyse les données du CV depuis Supabase et suggère 3 statistiques personnalisées
 
 import { createClient } from '@supabase/supabase-js';
+import { getRateLimitsFromDB } from './_utils/get-rate-limits.js';
 
 // Simple in-memory rate limiting
 const rateLimitStore = new Map();
 
-// Limites de taux par utilisateur (rate limit par userId au lieu de IP)
-const RATE_LIMITS = {
-    minute: { limit: 3, window: 60 * 1000 }, // 3 requêtes par minute
-    hour: { limit: 10, window: 60 * 60 * 1000 }, // 10 requêtes par heure
-    day: { limit: 20, window: 24 * 60 * 60 * 1000 }, // 20 requêtes par jour
-};
-
-// Fonction pour vérifier et mettre à jour le rate limit par userId
-function checkRateLimit(userId) {
+// Fonction pour vérifier et mettre à jour le rate limit par userId avec limites dynamiques
+function checkRateLimit(userId, rateLimits) {
     const now = Date.now();
 
     if (!rateLimitStore.has(userId)) {
@@ -27,7 +21,10 @@ function checkRateLimit(userId) {
 
     const userData = rateLimitStore.get(userId);
 
-    for (const [period, config] of Object.entries(RATE_LIMITS)) {
+    for (const [period, config] of Object.entries(rateLimits)) {
+        // Skip if limit is null (unlimited)
+        if (config.limit === null) continue;
+
         userData[period] = userData[period].filter(timestamp => now - timestamp < config.window);
 
         if (userData[period].length >= config.limit) {
@@ -53,9 +50,9 @@ function checkRateLimit(userId) {
     return {
         allowed: true,
         remaining: {
-            minute: RATE_LIMITS.minute.limit - userData.minute.length,
-            hour: RATE_LIMITS.hour.limit - userData.hour.length,
-            day: RATE_LIMITS.day.limit - userData.day.length
+            minute: rateLimits.minute.limit !== null ? rateLimits.minute.limit - userData.minute.length : 999,
+            hour: rateLimits.hour.limit !== null ? rateLimits.hour.limit - userData.hour.length : 999,
+            day: rateLimits.day.limit !== null ? rateLimits.day.limit - userData.day.length : 999
         }
     };
 }
@@ -63,8 +60,9 @@ function checkRateLimit(userId) {
 // Nettoyer périodiquement le store
 setInterval(() => {
     const now = Date.now();
+    const dayWindow = 24 * 60 * 60 * 1000; // 24 heures
     for (const [userId, data] of rateLimitStore.entries()) {
-        const hasRecentActivity = data.day.some(timestamp => now - timestamp < RATE_LIMITS.day.window);
+        const hasRecentActivity = data.day.some(timestamp => now - timestamp < dayWindow);
         if (!hasRecentActivity) {
             rateLimitStore.delete(userId);
         }
@@ -248,8 +246,11 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'userId is required' });
         }
 
-        // Vérifier le rate limit par userId (chaque utilisateur a son propre quota)
-        const rateLimitResult = checkRateLimit(userId);
+        // Récupérer les limites dynamiques depuis la base de données
+        const rateLimits = await getRateLimitsFromDB('statistics');
+
+        // Vérifier le rate limit par userId avec les limites dynamiques (chaque utilisateur a son propre quota)
+        const rateLimitResult = checkRateLimit(userId, rateLimits);
 
         if (!rateLimitResult.allowed) {
             const { waitTime, period, total, remaining } = rateLimitResult;

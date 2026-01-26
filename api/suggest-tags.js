@@ -1,28 +1,28 @@
 // Serverless function pour suggérer des tags/compétences basés sur la description
 // Utilise Claude Haiku pour analyser le texte et extraire les technologies pertinentes
 
+import { getRateLimitsFromDB } from './_utils/get-rate-limits.js';
+
 // Simple in-memory rate limiting
 const rateLimitStore = new Map();
 
-// Limites de taux
-const RATE_LIMITS = {
-    minute: { limit: 10, window: 60 * 1000 },
-    hour: { limit: 30, window: 60 * 60 * 1000 },
-};
-
-function checkRateLimit(ip) {
+function checkRateLimit(ip, rateLimits) {
     const now = Date.now();
 
     if (!rateLimitStore.has(ip)) {
         rateLimitStore.set(ip, {
             minute: [],
-            hour: []
+            hour: [],
+            day: []
         });
     }
 
     const ipData = rateLimitStore.get(ip);
 
-    for (const [period, config] of Object.entries(RATE_LIMITS)) {
+    for (const [period, config] of Object.entries(rateLimits)) {
+        // Skip if limit is null (unlimited)
+        if (config.limit === null) continue;
+
         ipData[period] = ipData[period].filter(timestamp => now - timestamp < config.window);
 
         if (ipData[period].length >= config.limit) {
@@ -41,6 +41,7 @@ function checkRateLimit(ip) {
 
     ipData.minute.push(now);
     ipData.hour.push(now);
+    ipData.day.push(now);
 
     return { allowed: true };
 }
@@ -58,7 +59,10 @@ export default async function handler(req, res) {
                    req.socket?.remoteAddress ||
                    'unknown';
 
-        const rateLimitResult = checkRateLimit(ip);
+        // Fetch dynamic rate limits from database
+        const rateLimits = await getRateLimitsFromDB('suggest_tags');
+
+        const rateLimitResult = checkRateLimit(ip, rateLimits);
 
         if (!rateLimitResult.allowed) {
             const { waitTime } = rateLimitResult;
