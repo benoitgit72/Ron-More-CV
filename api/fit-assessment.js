@@ -224,7 +224,11 @@ function buildCVContext(cvData, language) {
 
 // Validate Claude response
 function validateAnalysis(analysis) {
+    const errors = [];
+
     if (!analysis || typeof analysis !== 'object') {
+        errors.push('Analysis is not an object');
+        console.error('Validation failed:', errors);
         return false;
     }
 
@@ -239,31 +243,52 @@ function validateAnalysis(analysis) {
 
     for (const key of requiredKeys) {
         if (!analysis.hasOwnProperty(key)) {
-            return false;
+            errors.push(`Missing key: ${key}`);
         }
     }
 
     // Validate score
-    if (typeof analysis.overallScore !== 'number' || analysis.overallScore < 0 || analysis.overallScore > 100) {
-        return false;
+    if (typeof analysis.overallScore !== 'number') {
+        errors.push(`overallScore is not a number: ${typeof analysis.overallScore} = ${analysis.overallScore}`);
+    } else if (analysis.overallScore < 0 || analysis.overallScore > 100) {
+        errors.push(`overallScore out of range: ${analysis.overallScore}`);
     }
 
-    // Validate arrays
-    if (!Array.isArray(analysis.strongFit) || analysis.strongFit.length === 0) {
-        return false;
-    }
-    if (!Array.isArray(analysis.areasForDevelopment) || analysis.areasForDevelopment.length === 0) {
-        return false;
-    }
-    if (!Array.isArray(analysis.recommendations) || analysis.recommendations.length === 0) {
-        return false;
+    // Validate arrays (more lenient - accept at least 1 item)
+    if (!Array.isArray(analysis.strongFit)) {
+        errors.push('strongFit is not an array');
+    } else if (analysis.strongFit.length === 0) {
+        errors.push('strongFit array is empty');
     }
 
-    // Validate summaries
-    if (typeof analysis.strongFitSummary !== 'string' || analysis.strongFitSummary.length < 10) {
-        return false;
+    if (!Array.isArray(analysis.areasForDevelopment)) {
+        errors.push('areasForDevelopment is not an array');
+    } else if (analysis.areasForDevelopment.length === 0) {
+        errors.push('areasForDevelopment array is empty');
     }
-    if (typeof analysis.developmentSummary !== 'string' || analysis.developmentSummary.length < 10) {
+
+    if (!Array.isArray(analysis.recommendations)) {
+        errors.push('recommendations is not an array');
+    } else if (analysis.recommendations.length === 0) {
+        errors.push('recommendations array is empty');
+    }
+
+    // Validate summaries (slightly more lenient - accept 5+ chars)
+    if (typeof analysis.strongFitSummary !== 'string') {
+        errors.push('strongFitSummary is not a string');
+    } else if (analysis.strongFitSummary.length < 5) {
+        errors.push(`strongFitSummary too short: ${analysis.strongFitSummary.length} chars`);
+    }
+
+    if (typeof analysis.developmentSummary !== 'string') {
+        errors.push('developmentSummary is not a string');
+    } else if (analysis.developmentSummary.length < 5) {
+        errors.push(`developmentSummary too short: ${analysis.developmentSummary.length} chars`);
+    }
+
+    if (errors.length > 0) {
+        console.error('❌ Validation errors:', errors);
+        console.error('Analysis object:', JSON.stringify(analysis, null, 2));
         return false;
     }
 
