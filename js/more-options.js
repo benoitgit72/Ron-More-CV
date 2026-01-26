@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     initMoreOptionsMenu();
     initPdfDownload();
+    initFitAssessment();
 });
 
 /**
@@ -76,6 +77,26 @@ function initPdfDownload() {
     downloadBtn.addEventListener('click', async () => {
         closeMoreOptionsMenu();
         await generatePDF();
+    });
+}
+
+/**
+ * Initialize Fit Assessment functionality
+ */
+function initFitAssessment() {
+    const fitBtn = document.getElementById('fitAssessmentBtn');
+
+    if (!fitBtn) return;
+
+    fitBtn.addEventListener('click', () => {
+        closeMoreOptionsMenu();
+
+        // Call the openFitModal function from fit-assessment.js
+        if (typeof openFitModal === 'function') {
+            openFitModal();
+        } else {
+            console.error('openFitModal function not found');
+        }
     });
 }
 

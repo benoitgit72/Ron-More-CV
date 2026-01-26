@@ -271,6 +271,27 @@ const translations = {
         chatbot_welcome: "Bonjour! Je suis un assistant IA qui peut répondre à vos questions sur le parcours professionnel. N'hésitez pas à me demander des informations sur son expérience, ses compétences ou sa formation.",
         chatbot_placeholder: "Posez une question sur mon CV...",
         chatbot_send: "Envoyer",
+
+        // Fit Assessment
+        fit_assessment_menu: "Évaluation de Compatibilité",
+        fit_assessment_title: "Évaluation de Compatibilité",
+        fit_job_label: "Collez la description de poste ici:",
+        fit_job_placeholder: "Exemple: Nous recherchons un Chef de Projet avec 10+ ans d'expérience en gestion de projets SAS, expertise en migration cloud, et leadership d'équipe...",
+        fit_characters: "caractères",
+        fit_analyze_btn: "🔍 Analyser",
+        fit_analyzing: "Analyse en cours...",
+        fit_overall_score: "Score Global",
+        fit_strong_title: "Strong Fit",
+        fit_development_title: "Axes de Développement",
+        fit_recommendations_title: "Recommandations",
+        fit_copy_btn: "📋 Copier les résultats",
+        fit_new_analysis_btn: "🔄 Nouvelle analyse",
+        fit_retry_btn: "Réessayer",
+        fit_error_empty: "Veuillez coller une description de poste",
+        fit_error_rate_limit: "Vous avez atteint la limite de 5 analyses par jour. Réessayez dans {hours} heures.",
+        fit_error_generic: "Une erreur est survenue. Veuillez réessayer.",
+        fit_copied_success: "Résultats copiés dans le presse-papiers!",
+        fit_remaining: "{count} analyses restantes aujourd'hui",
     },
 
     en: {
@@ -544,6 +565,27 @@ const translations = {
         chatbot_welcome: "Hello! I am an AI assistant who can answer your questions about professional background. Feel free to ask me about his experience, skills, or education.",
         chatbot_placeholder: "Ask a question about my resume...",
         chatbot_send: "Send",
+
+        // Fit Assessment
+        fit_assessment_menu: "Honest Fit Assessment",
+        fit_assessment_title: "Honest Fit Assessment",
+        fit_job_label: "Paste the job description here:",
+        fit_job_placeholder: "Example: We are seeking a Project Manager with 10+ years of experience in SAS project management, cloud migration expertise, and team leadership...",
+        fit_characters: "characters",
+        fit_analyze_btn: "🔍 Analyze",
+        fit_analyzing: "Analyzing...",
+        fit_overall_score: "Overall Score",
+        fit_strong_title: "Strong Fit",
+        fit_development_title: "Areas for Development",
+        fit_recommendations_title: "Recommendations",
+        fit_copy_btn: "📋 Copy results",
+        fit_new_analysis_btn: "🔄 New analysis",
+        fit_retry_btn: "Retry",
+        fit_error_empty: "Please paste a job description",
+        fit_error_rate_limit: "You've reached the limit of 5 analyses per day. Try again in {hours} hours.",
+        fit_error_generic: "An error occurred. Please try again.",
+        fit_copied_success: "Results copied to clipboard!",
+        fit_remaining: "{count} analyses remaining today",
     }
 };
 

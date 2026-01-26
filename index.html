@@ -6,6 +6,7 @@
     <meta name="description" content="CV interactif de Benoit Gaulin">
     <title>Benoit Gaulin - CV Interactif</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/fit-assessment.css">
 </head>
 <body>
     <!-- Appliquer le thème immédiatement avant tout contenu -->
@@ -58,6 +59,13 @@
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
                             <span>Télécharger en PDF</span>
+                        </button>
+                        <button class="menu-item" id="fitAssessmentBtn" role="menuitem">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                            <span data-i18n="fit_assessment_menu">Évaluation de Compatibilité</span>
                         </button>
                     </div>
                 </li>
@@ -763,6 +771,110 @@
         </svg>
     </button>
 
+    <!-- Honest Fit Assessment Modal -->
+    <div id="fitAssessmentModal" class="fit-modal" hidden>
+        <div class="fit-modal-overlay"></div>
+        <div class="fit-modal-content">
+            <!-- Header -->
+            <div class="fit-modal-header">
+                <h2 data-i18n="fit_assessment_title">Évaluation de Compatibilité</h2>
+                <button class="fit-modal-close" aria-label="Fermer">×</button>
+            </div>
+
+            <!-- Body -->
+            <div class="fit-modal-body">
+                <!-- Input Section -->
+                <div class="fit-input-section">
+                    <label for="jobDescription" data-i18n="fit_job_label">
+                        Collez la description de poste ici:
+                    </label>
+                    <textarea
+                        id="jobDescription"
+                        rows="10"
+                        maxlength="10000"
+                        data-i18n-placeholder="fit_job_placeholder"
+                    ></textarea>
+                    <div class="fit-char-count">
+                        <span id="charCount">0</span> / 10,000 <span data-i18n="fit_characters">caractères</span>
+                    </div>
+                    <button id="analyzeFitBtn" class="btn-analyze" disabled>
+                        <span data-i18n="fit_analyze_btn">🔍 Analyser</span>
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div id="fitLoadingState" class="fit-loading" hidden>
+                    <div class="spinner"></div>
+                    <p data-i18n="fit_analyzing">Analyse en cours...</p>
+                </div>
+
+                <!-- Results Section -->
+                <div id="fitResults" class="fit-results" hidden>
+                    <!-- Overall Score -->
+                    <div class="fit-score-card">
+                        <div class="fit-score-circle">
+                            <span class="fit-score-value">0%</span>
+                        </div>
+                        <h3 data-i18n="fit_overall_score">Score Global</h3>
+                    </div>
+
+                    <!-- Strong Fit -->
+                    <div class="fit-section fit-strong">
+                        <h3>✅ <span data-i18n="fit_strong_title">Strong Fit</span></h3>
+                        <ul class="fit-list" id="strongFitList">
+                            <!-- Filled by JS -->
+                        </ul>
+                        <div class="fit-summary">
+                            <p id="strongFitSummary"></p>
+                        </div>
+                    </div>
+
+                    <!-- Areas for Development -->
+                    <div class="fit-section fit-development">
+                        <h3>⚠️ <span data-i18n="fit_development_title">Axes de Développement</span></h3>
+                        <ul class="fit-list" id="developmentList">
+                            <!-- Filled by JS -->
+                        </ul>
+                        <div class="fit-summary">
+                            <p id="developmentSummary"></p>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="fit-section fit-recommendations">
+                        <h3>💡 <span data-i18n="fit_recommendations_title">Recommandations</span></h3>
+                        <ul class="fit-list" id="recommendationsList">
+                            <!-- Filled by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="fit-actions">
+                        <button id="copyResultsBtn" class="btn-copy">
+                            <span data-i18n="fit_copy_btn">📋 Copier les résultats</span>
+                        </button>
+                        <button id="newAnalysisBtn" class="btn-secondary">
+                            <span data-i18n="fit_new_analysis_btn">🔄 Nouvelle analyse</span>
+                        </button>
+                    </div>
+
+                    <!-- Remaining Count -->
+                    <div class="fit-remaining">
+                        <p id="remainingCountText"></p>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="fitErrorState" class="fit-error" hidden>
+                    <p class="error-message" id="fitErrorMessage"></p>
+                    <button id="retryAnalysisBtn" class="btn-retry" hidden>
+                        <span data-i18n="fit_retry_btn">Réessayer</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chatbot IA -->
     <div class="chatbot-container" id="chatbotContainer">
         <button class="chatbot-toggle" id="chatbotToggle" aria-label="Demander à l'IA">
@@ -846,5 +958,8 @@
 
     <!-- Script pour le menu et le PDF -->
     <script src="js/more-options.js"></script>
+
+    <!-- Script pour Fit Assessment -->
+    <script src="js/fit-assessment.js"></script>
 </body>
 </html>
