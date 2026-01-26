@@ -83,8 +83,8 @@ function renderLimitsGrid(limits, container) {
     }
 
     container.innerHTML = limits.map(limit => {
-        const labelText = currentAdminLanguage === 'en' ? limit.feature_label_en : limit.feature_label_fr;
-        const descText = currentAdminLanguage === 'en' ? limit.description_en : limit.description_fr;
+        const labelText = limit.feature_label_fr;
+        const descText = limit.description_fr;
         const rateLimitText = limit.rate_limit_by === 'user_id' ? 'Par utilisateur' : 'Par adresse IP';
 
         return `
@@ -235,12 +235,7 @@ async function saveLimits(featureName) {
         const data = await response.json();
 
         // Show success message
-        showToast(
-            currentAdminLanguage === 'en'
-                ? '✅ Limits updated successfully!'
-                : '✅ Limites mises à jour avec succès!',
-            'success'
-        );
+        showToast('✅ Limites mises à jour avec succès!', 'success');
 
         // Reset button state
         saveBtn.classList.remove('btn-warning');
@@ -251,12 +246,7 @@ async function saveLimits(featureName) {
 
     } catch (error) {
         console.error('Error saving limits:', error);
-        showToast(
-            currentAdminLanguage === 'en'
-                ? '❌ Error: ' + error.message
-                : '❌ Erreur: ' + error.message,
-            'error'
-        );
+        showToast('❌ Erreur: ' + error.message, 'error');
 
         saveBtn.disabled = false;
         saveBtn.innerHTML = originalText;
@@ -312,7 +302,7 @@ async function loadLimitsHistory() {
 
             const featureLimit = currentLimits.find(l => l.feature_name === entry.feature_name);
             const featureName = featureLimit
-                ? (currentAdminLanguage === 'en' ? featureLimit.feature_label_en : featureLimit.feature_label_fr)
+                ? featureLimit.feature_label_fr
                 : entry.feature_name;
 
             const changedBy = entry.changed_by_profile?.slug || 'Admin';
