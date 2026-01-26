@@ -16,8 +16,15 @@ function initSupabase() {
         return null;
     }
 
-    // Créer le client Supabase
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Créer le client Supabase avec options d'auth
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true,
+            storage: window.localStorage
+        }
+    });
     console.log('✅ Client Supabase initialisé');
 
     return supabaseClient;
