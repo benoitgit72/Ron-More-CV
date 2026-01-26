@@ -1643,6 +1643,7 @@ body {
     gap: 12px;
     font-size: 14px;
     font-weight: 500;
+    color: #111827;
 }
 
 .toast-success {

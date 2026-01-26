@@ -352,11 +352,13 @@ export default async function handler(req, res) {
 
 TÂCHE: Analyser la compatibilité entre ce CV et une description de poste.
 
+CONTEXTE: Tu analyses pour un employeur ou une firme de placement qui évalue ce candidat.
+
 RÈGLES:
 - Génère un score global de 0 à 100 (sois réaliste et honnête)
 - Liste 3-5 points "Strong Fit" (correspondances fortes avec le poste)
 - Liste 2-4 points "Areas for Development" (compétences manquantes ou à développer)
-- Propose 2-3 recommandations concrètes et actionnables
+- Propose 2-3 recommandations POUR L'EMPLOYEUR/RECRUTEUR (ex: "Évaluer ses compétences en...", "Prévoir une formation sur...", "Vérifier son expérience avec...")
 - Ajoute un résumé de 30-50 mots pour Strong Fit et Development
 - Sois constructif mais honnête
 - Réponds en ${language === 'fr' ? 'français' : 'anglais'}
