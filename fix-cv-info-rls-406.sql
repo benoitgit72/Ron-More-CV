@@ -34,20 +34,14 @@ DROP POLICY IF EXISTS "Users can delete their own cv_info" ON cv_info;
 -- RECRÉER avec la bonne configuration
 -- ============================================
 
--- Policy 1: Lecture publique pour TOUS (nécessaire pour CV publiques)
--- Cette policy permet aux utilisateurs NON authentifiés de voir les CV
-CREATE POLICY "Public read access"
+-- Policy 1: Lecture pour TOUS (public ET authenticated)
+-- Permet aux utilisateurs (connectés ou non) de voir TOUS les CV publiques
+-- IMPORTANT: Les roles 'public' ET 'authenticated' doivent être listés
+CREATE POLICY "Everyone can read all cv_info"
     ON cv_info
     FOR SELECT
-    TO public
+    TO public, authenticated
     USING (true);
-
--- Policy 2: Les utilisateurs authentifiés peuvent voir leurs propres données
-CREATE POLICY "Users can read own cv_info"
-    ON cv_info
-    FOR SELECT
-    TO authenticated
-    USING (auth.uid() = user_id);
 
 -- Policy 3: Les utilisateurs peuvent mettre à jour leurs propres données
 CREATE POLICY "Users can update own cv_info"

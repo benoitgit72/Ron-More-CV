@@ -9,6 +9,7 @@ DROP POLICY IF EXISTS "Public can read api limits" ON api_limits;
 CREATE POLICY "Public can read api limits"
     ON api_limits
     FOR SELECT
+    TO public, authenticated
     USING (true);
 
 -- Vérification
