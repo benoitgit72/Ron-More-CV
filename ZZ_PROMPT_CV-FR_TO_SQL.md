@@ -1,5 +1,10 @@
 # Prompt: CV Français → SQL INSERT pour Supabase
 
+## PREMIÈRE ETAPE CRITIQUE.
+Toujour demander le code [UUID] qui aura déjà été généré dans la base de données supabase lors de la création manuel de l'usager. Le code doit ressembler à ceci: `24106dd4-48a6-4dec-8c10-0c2bcde4e888`
+
+- Prend le code fournit par l'usager du prompt et référence son contenu via [UUID] dans le reste de ce prompt.
+
 ## Instructions pour Claude
 
 Tu es un expert en extraction de données de CV et génération de SQL pour Supabase.
